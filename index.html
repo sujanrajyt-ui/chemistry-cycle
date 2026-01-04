@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Chemistry Cycle - Notes</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <div class="logo">Chemistry Cycle</div>
+      <nav class="nav-links">
+        <a href="#" class="nav-link" id="chemNotesNav">Chemistry Cycle Notes</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="hero">
+      <h1>Chemistry Cycle</h1>
+      <p>Notes will be available here soon.</p>
+
+      <div class="hero-buttons">
+        <button class="btn" id="chemNotesBtn">Chemistry Cycle Notes</button>
+      </div>
+
+      <div id="comingSoonBox" class="message hidden"></div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <p>&copy; 2025 Chemistry Cycle • By Sujanraj. All rights reserved.</p>
+  </footer>
+
+  <script>
+    const comingSoonBox = document.getElementById('comingSoonBox');
+    const chemNotesBtn = document.getElementById('chemNotesBtn');
+    const chemNotesNav = document.getElementById('chemNotesNav');
+    let hideTimeout;
+
+    function showComingSoon() {
+      if (!comingSoonBox) return;
+
+      comingSoonBox.textContent = 'Chemistry Cycle notes are coming soon.';
+      comingSoonBox.classList.remove('hidden');
+
+      clearTimeout(hideTimeout);
+      hideTimeout = setTimeout(() => {
+        comingSoonBox.classList.add('hidden');
+      }, 3000);
+    }
+
+    [chemNotesBtn, chemNotesNav].forEach((el) => {
+      if (!el) return;
+      el.addEventListener('click', (e) => {
+        e.preventDefault();
+        showComingSoon();
+      });
+    });
+  </script>
+</body>
+</html>
