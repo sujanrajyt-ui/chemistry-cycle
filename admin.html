@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Admin Upload - Chemistry cycle</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="style.css">
+  <style>
+    :root {
+      --accent: #dc2626;       /* red */
+      --accent-dark: #b91c1c;  /* darker red */
+      --accent-light: #fee2e2; /* pale red */
+    }
+
+    /* ====== RED THEME OVERRIDES ====== */
+    .site-header {
+      background: linear-gradient(90deg, var(--accent-dark), var(--accent));
+      color: #ffffff;
+      box-shadow: 0 10px 30px rgba(185, 28, 28, 0.35);
+    }
+
+    .header-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0.9rem 1.25rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1.5rem;
+    }
+
+    .logo {
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      color: #ffffff;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 0.75rem;
+      align-items: center;
+    }
+
+    .nav-link {
+      padding: 0.35rem 0.85rem;
+      border-radius: 999px;
+      font-size: 0.9rem;
+      color: var(--accent-light);
+      text-decoration: none;
+      transition: background 0.15s ease, color 0.15s ease, transform 0.1s ease;
+    }
+
+    .nav-link:hover {
+      background: rgba(255, 255, 255, 0.18);
+      color: #ffffff;
+      transform: translateY(-1px);
+    }
+
+    .nav-link:active {
+      transform: translateY(0);
+    }
+
+    .btn {
+      background: var(--accent);
+      color: #ffffff;
+      border: none;
+      padding: 0.45rem 1.05rem;
+      border-radius: 999px;
+      font-size: 0.9rem;
+      font-weight: 500;
+      cursor: pointer;
+      box-shadow: 0 8px 20px rgba(220, 38, 38, 0.3);
+      transition: background 0.15s ease, box-shadow 0.15s ease, transform 0.1s ease;
+    }
+
+    .btn:hover {
+      background: var(--accent-dark);
+      box-shadow: 0 10px 24px rgba(185, 28, 28, 0.35);
+      transform: translateY(-1px);
+    }
+
+    .btn:active {
+      transform: translateY(0);
+      box-shadow: 0 6px 16px rgba(185, 28, 28, 0.35);
+    }
+
+    .btn-secondary {
+      background: #6b7280;
+      box-shadow: none;
+      color: #ffffff;
+    }
+    .btn-secondary:hover {
+      background: #4b5563;
+    }
+
+    .site-footer {
+      margin-top: 2rem;
+      padding: 1rem 1.25rem;
+      text-align: center;
+      font-size: 0.85rem;
+      color: #4b5563;
+      border-top: 1px solid #fecaca;
+      background: #fef2f2;
+    }
+
+    /* ====== ADMIN LAYOUT ====== */
+    .admin-container {
+      max-width: 800px;
+      margin: 2rem auto;
+      background: #ffffff;
+      padding: 1.5rem;
+      border-radius: 12px;
+      box-shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+    .admin-container h1 {
+      margin-bottom: 0.75rem;
+    }
+    .admin-section h2 {
+      font-size: 1.1rem;
+      margin-bottom: 0.5rem;
+    }
+    .admin-field {
+      margin-bottom: 1rem;
+    }
+    .admin-field label {
+      display: block;
+      font-size: 0.9rem;
+      margin-bottom: 0.3rem;
+      color: #4b5563;
+    }
+    .admin-input,
+    .admin-select {
+      width: 100%;
+      padding: 0.4rem 0.6rem;
+      border-radius: 8px;
+      border: 1px solid #d1d5db;
+      font-size: 0.9rem;
+    }
+    #status {
+      margin-top: 0.75rem;
+      font-size: 0.9rem;
+    }
+    .files-list {
+      margin-top: 0.5rem;
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      padding: 0.75rem;
+      max-height: 250px;
+      overflow-y: auto;
+      background: #f9fafb;
+    }
+    .file-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.5rem;
+      padding: 0.35rem 0.4rem;
+      border-bottom: 1px solid #e5e7eb;
+      font-size: 0.85rem;
+    }
+    .file-row:last-child {
+      border-bottom: none;
+    }
+    .file-name {
+      word-break: break-all;
+    }
+    .delete-btn {
+      padding: 0.25rem 0.6rem;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      border: none;
+      cursor: pointer;
+      background: #ef4444;
+      color: #ffffff;
+    }
+    .delete-btn:hover {
+      background: #b91c1c;
+    }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <div class="logo">Chemistry Cycle - Admin</div>
+      <nav class="nav-links">
+        <a href="index.html" class="nav-link">Home</a>
+        <a href="branches.html" class="nav-link">Notes</a>
+        <!-- Quiz link removed -->
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    <div class="admin-container">
+      <!-- UPLOAD SECTION -->
+      <section class="admin-section">
+        <h1>Upload Subject PDF</h1>
+        <p style="font-size:0.9rem;color:#6b7280;margin-bottom:1rem;">
+          Choose a subject and upload a PDF. The file name will control the order (e.g. 01_, 02_) but prefixes are hidden from students.
+        </p>
+
+        <form id="uploadForm">
+          <div class="admin-field">
+            <label for="subjectSelect">Subject</label>
+            <select id="subjectSelect" class="admin-select">
+              <option value="PSP">PSP</option>
+              <option value="Physics">Physics</option>
+              <option value="Calculus">Calculus</option>
+              <option value="Basic Electronics">Basic Electronics</option>
+              <option value="ADLD">ADLD</option>
+              <option value="UHV">UHV</option>
+              <option value="COI">COI</option>
+            </select>
+          </div>
+
+          <div class="admin-field">
+            <label for="titleInput">Title / Chapter (optional, not shown to users)</label>
+            <input id="titleInput" class="admin-input" type="text" placeholder="e.g. Unit 1 – Introduction">
+          </div>
+
+          <div class="admin-field">
+            <label for="fileInput">PDF file</label>
+            <input id="fileInput" type="file" accept="application/pdf">
+          </div>
+
+          <button type="submit" class="btn">Upload</button>
+        </form>
+
+        <p id="status"></p>
+      </section>
+
+      <!-- MANAGE / DELETE SECTION -->
+      <section class="admin-section">
+        <h2>Manage uploaded files</h2>
+        <p style="font-size:0.85rem;color:#6b7280;margin-bottom:0.75rem;">
+          Select a subject to view and delete its files.
+        </p>
+
+        <div class="admin-field">
+          <label for="manageSubjectSelect">Subject</label>
+          <select id="manageSubjectSelect" class="admin-select">
+            <option value="PSP">PSP</option>
+            <option value="Physics">Physics</option>
+            <option value="Calculus">Calculus</option>
+            <option value="Basic Electronics">Basic Electronics</option>
+            <option value="ADLD">ADLD</option>
+            <option value="UHV">UHV</option>
+            <option value="COI">COI</option>
+          </select>
+        </div>
+
+        <button id="loadFilesBtn" class="btn btn-secondary">Load Files</button>
+
+        <div id="filesList" class="files-list">
+          <span style="font-size:0.85rem;color:#9ca3af;">No subject selected.</span>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <p>&copy; 2025 Chemistry Cycle • By Sujanraj. All rights reserved.</p>
+  </footer>
+
+  <!-- Supabase upload + delete logic -->
+  <script type="module">
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+
+    const SUPABASE_URL = 'https://brvbbxbfcrcpgkxxfuhv.supabase.co';
+    const SUPABASE_ANON_KEY =
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJydmJieGJmY3JjcGdreHhmdWh2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQ1NzM1MzIsImV4cCI6MjA4MDE0OTUzMn0.Z8FYzhVSn0eMgQAWcXg9ul70AeSyWMid4dFtrhAZalQ';
+
+    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    // Upload elements
+    const uploadForm = document.getElementById('uploadForm');
+    const fileInput = document.getElementById('fileInput');
+    const subjectSelect = document.getElementById('subjectSelect');
+    const titleInput = document.getElementById('titleInput');
+    const statusEl = document.getElementById('status');
+
+    // Manage/delete elements
+    const manageSubjectSelect = document.getElementById('manageSubjectSelect');
+    const loadFilesBtn = document.getElementById('loadFilesBtn');
+    const filesList = document.getElementById('filesList');
+
+    // ====== UPLOAD HANDLER ======
+    uploadForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const file = fileInput.files[0];
+      const subject = subjectSelect.value;
+      const title = titleInput.value.trim() || (file && file.name) || "Untitled";
+
+      if (!file) {
+        statusEl.textContent = "Please choose a PDF file.";
+        statusEl.style.color = "#b91c1c";
+        return;
+      }
+
+      statusEl.textContent = "Uploading...";
+      statusEl.style.color = "#374151";
+
+      try {
+        // Store exactly as file.name so order = name
+        const path = `semester1/${subject}/${file.name}`;
+
+        const { error } = await supabase
+          .storage
+          .from('notes')
+          .upload(path, file, { upsert: true }); // overwrite if same name
+
+        if (error) {
+          console.error(error);
+          statusEl.textContent = "Upload failed: " + error.message;
+          statusEl.style.color = "#b91c1c";
+          return;
+        }
+
+        statusEl.textContent = "Upload successful!";
+        statusEl.style.color = "#15803d";
+
+        fileInput.value = "";
+        // titleInput.value = "";
+      } catch (err) {
+        console.error(err);
+        statusEl.textContent = "Upload failed: " + err.message;
+        statusEl.style.color = "#b91c1c";
+      }
+    });
+
+    // ====== LOAD FILES FOR A SUBJECT (MANAGE) ======
+    async function loadFilesForSubject(subj) {
+      filesList.innerHTML = '<span style="font-size:0.85rem;color:#6b7280;">Loading files...</span>';
+
+      const folder = `semester1/${subj}`;
+
+      const { data, error } = await supabase
+        .storage
+        .from('notes')
+        .list(folder, {
+          limit: 100,
+          offset: 0,
+          sortBy: { column: 'name', order: 'asc' }
+        });
+
+      if (error) {
+        console.error('Error listing for', subj, error);
+        filesList.innerHTML = '<span style="font-size:0.85rem;color:#b91c1c;">Failed to load files.</span>';
+        return;
+      }
+
+      if (!data || data.length === 0) {
+        filesList.innerHTML = `<span style="font-size:0.85rem;color:#9ca3af;">No files found for ${subj}.</span>`;
+        return;
+      }
+
+      filesList.innerHTML = '';
+      data.forEach(file => {
+        const row = document.createElement('div');
+        row.className = 'file-row';
+
+        const nameSpan = document.createElement('span');
+        nameSpan.className = 'file-name';
+        nameSpan.textContent = file.name;
+
+        const delBtn = document.createElement('button');
+        delBtn.className = 'delete-btn';
+        delBtn.textContent = 'Delete';
+        delBtn.dataset.path = `${folder}/${file.name}`;
+
+        delBtn.addEventListener('click', async () => {
+          const confirmed = confirm(`Delete "${file.name}" for ${subj}?`);
+          if (!confirmed) return;
+
+          delBtn.disabled = true;
+          delBtn.textContent = 'Deleting...';
+
+          const { error: delError } = await supabase
+            .storage
+            .from('notes')
+            .remove([delBtn.dataset.path]);
+
+          if (delError) {
+            console.error(delError);
+            alert('Failed to delete: ' + delError.message);
+            delBtn.disabled = false;
+            delBtn.textContent = 'Delete';
+            return;
+          }
+
+          row.remove();
+          if (!filesList.querySelector('.file-row')) {
+            filesList.innerHTML = `<span style="font-size:0.85rem;color:#9ca3af;">No files left for ${subj}.</span>`;
+          }
+        });
+
+        row.appendChild(nameSpan);
+        row.appendChild(delBtn);
+        filesList.appendChild(row);
+      });
+    }
+
+    loadFilesBtn.addEventListener('click', () => {
+      const subj = manageSubjectSelect.value;
+      loadFilesForSubject(subj);
+    });
+  </script>
+</body>
+</html>
