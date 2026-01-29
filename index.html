@@ -5,59 +5,116 @@
   <title>Chemistry Cycle - Notes</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link rel="stylesheet" href="style.css" />
+
+  <style>
+    .subjects {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 0.75rem;
+      margin-top: 1.5rem;
+    }
+    .files-box {
+      margin-top: 1.5rem;
+      background: #ffffff;
+      border-radius: 10px;
+      padding: 1rem;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.06);
+    }
+    .file-item {
+      padding: 0.4rem 0;
+      border-bottom: 1px solid #e5e7eb;
+      font-size: 0.9rem;
+    }
+    .file-item:last-child {
+      border-bottom: none;
+    }
+    .file-item a {
+      color: #dc2626;
+      text-decoration: none;
+    }
+    .file-item a:hover {
+      text-decoration: underline;
+    }
+  </style>
 </head>
+
 <body>
-  <header class="site-header">
-    <div class="header-inner">
-      <div class="logo">Chemistry Cycle</div>
-      <nav class="nav-links">
-        <a href="#" class="nav-link" id="chemNotesNav">Chemistry Cycle Notes</a>
-      </nav>
+<header class="site-header">
+  <div class="header-inner">
+    <div class="logo">Chemistry Cycle</div>
+  </div>
+</header>
+
+<main class="container">
+  <section class="hero">
+    <h1>Chemistry Cycle Notes</h1>
+    <p>Select a subject to view available PDFs.</p>
+
+    <div class="subjects">
+      <button class="btn" data-subject="IPP">IPP</button>
+      <button class="btn" data-subject="EEE">EEE</button>
+      <button class="btn" data-subject="MAT">MAT</button>
+      <button class="btn" data-subject="CHY">CHY</button>
+      <button class="btn" data-subject="EV">EV</button>
+      <button class="btn" data-subject="ESS">ESS</button>
+      <button class="btn" data-subject="BIO">BIO</button>
+      <button class="btn" data-subject="ADLD">ADLD</button>
+      <button class="btn" data-subject="BE">BE</button>
     </div>
-  </header>
 
-  <main class="container">
-    <section class="hero">
-      <h1>Chemistry Cycle</h1>
-      <p>Notes will be available here soon.</p>
+    <div id="filesBox" class="files-box" style="display:none;"></div>
+  </section>
+</main>
 
-      <div class="hero-buttons">
-        <button class="btn" id="chemNotesBtn">Chemistry Cycle Notes</button>
-      </div>
+<footer class="site-footer">
+  <p>&copy; 2025 Chemistry Cycle • By Sujanraj. All rights reserved.</p>
+</footer>
 
-      <div id="comingSoonBox" class="message hidden"></div>
-    </section>
-  </main>
+<script type="module">
+  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
 
-  <footer class="site-footer">
-    <p>&copy; 2025 Chemistry Cycle • By Sujanraj. All rights reserved.</p>
-  </footer>
+  const SUPABASE_URL = 'https://brvbbxbfcrcpgkxxfuhv.supabase.co';
+  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJydmJieGJmY3JjcGdreHhmdWh2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQ1NzM1MzIsImV4cCI6MjA4MDE0OTUzMn0.Z8FYzhVSn0eMgQAWcXg9ul70AeSyWMid4dFtrhAZalQ';
 
-  <script>
-    const comingSoonBox = document.getElementById('comingSoonBox');
-    const chemNotesBtn = document.getElementById('chemNotesBtn');
-    const chemNotesNav = document.getElementById('chemNotesNav');
-    let hideTimeout;
+  const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  const filesBox = document.getElementById('filesBox');
 
-    function showComingSoon() {
-      if (!comingSoonBox) return;
+  async function loadSubject(subject) {
+    filesBox.style.display = 'block';
+    filesBox.innerHTML = `<p>Loading ${subject} files...</p>`;
 
-      comingSoonBox.textContent = 'Chemistry Cycle notes are coming soon.';
-      comingSoonBox.classList.remove('hidden');
+    const folder = `chemistry_cycle/${subject}`;
 
-      clearTimeout(hideTimeout);
-      hideTimeout = setTimeout(() => {
-        comingSoonBox.classList.add('hidden');
-      }, 3000);
+    const { data, error } = await supabase
+      .storage
+      .from('notes')
+      .list(folder, { sortBy: { column: 'name', order: 'asc' } });
+
+    if (error || !data || data.length === 0) {
+      filesBox.innerHTML = `<p>No files found for ${subject}.</p>`;
+      return;
     }
 
-    [chemNotesBtn, chemNotesNav].forEach((el) => {
-      if (!el) return;
-      el.addEventListener('click', (e) => {
-        e.preventDefault();
-        showComingSoon();
-      });
+    filesBox.innerHTML = `<h3>${subject} Notes</h3>`;
+
+    data.forEach(file => {
+      const { data: urlData } = supabase
+        .storage
+        .from('notes')
+        .getPublicUrl(`${folder}/${file.name}`);
+
+      const div = document.createElement('div');
+      div.className = 'file-item';
+      div.innerHTML = `<a href="${urlData.publicUrl}" target="_blank">${file.name}</a>`;
+      filesBox.appendChild(div);
     });
-  </script>
+  }
+
+  document.querySelectorAll('[data-subject]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      loadSubject(btn.dataset.subject);
+    });
+  });
+</script>
 </body>
 </html>
