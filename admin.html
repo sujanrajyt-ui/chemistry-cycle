@@ -115,7 +115,7 @@
       flex-direction: column;
       gap: 1.5rem;
     }
-    .admin-container h1 {
+    .admin-section h1 {
       margin-bottom: 0.75rem;
     }
     .admin-section h2 {
@@ -189,7 +189,6 @@
     <nav class="nav-links">
       <a href="index.html" class="nav-link">Home</a>
       <a href="branches.html" class="nav-link">Notes</a>
-      <!-- Quiz link removed -->
     </nav>
   </div>
 </header>
@@ -201,7 +200,7 @@
     <section class="admin-section">
       <h1>Upload Subject PDF</h1>
       <p style="font-size:0.9rem;color:#6b7280;margin-bottom:1rem;">
-        Choose a subject and upload a PDF. The file name will control the order (e.g. 01_, 02_) but prefixes are hidden from students.
+        Choose a subject and upload a PDF.
       </p>
 
       <form id="uploadForm">
@@ -298,7 +297,6 @@
     e.preventDefault();
     const file = fileInput.files[0];
     const subject = subjectSelect.value; 
-    // const title = titleInput.value.trim() || (file && file.name) || "Untitled";
 
     if (!file) {
       statusEl.textContent = "Please choose a PDF file.";
@@ -310,13 +308,13 @@
     statusEl.style.color = "#374151";
 
     try {
-      // Store exactly as file.name so order = name
-      const path = `semester1/${subject}/${file.name}`;
+      // CHANGED: Using 'chemistry_cycle' folder instead of 'semester1'
+      const path = `chemistry_cycle/${subject}/${file.name}`;
       
       const { error } = await supabase
         .storage
         .from('notes')
-        .upload(path, file, { upsert: true }); // overwrite if same name
+        .upload(path, file, { upsert: true });
 
       if (error) {
         console.error(error);
@@ -328,7 +326,6 @@
       statusEl.textContent = "Upload successful!";
       statusEl.style.color = "#15803d";
       fileInput.value = "";
-      // titleInput.value = "";
     } catch (err) {
       console.error(err);
       statusEl.textContent = "Upload failed: " + err.message;
@@ -340,7 +337,8 @@
   async function loadFilesForSubject(subj) {
     filesList.innerHTML = '<span style="font-size:0.85rem;color:#6b7280;">Loading files...</span>';
 
-    const folder = `semester1/${subj}`;
+    // CHANGED: Using 'chemistry_cycle' folder instead of 'semester1'
+    const folder = `chemistry_cycle/${subj}`;
     
     const { data, error } = await supabase
       .storage
