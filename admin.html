@@ -6,11 +6,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   <style>
-    :root {
-      --accent: #dc2626;
-      --accent-dark: #b91c1c;
-    }
-
     body {
       margin: 0;
       font-family: system-ui, sans-serif;
@@ -18,7 +13,7 @@
     }
 
     header {
-      background: linear-gradient(90deg, var(--accent-dark), var(--accent));
+      background: linear-gradient(90deg, #b91c1c, #dc2626);
       color: #fff;
       padding: 1rem;
     }
@@ -29,12 +24,6 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-    }
-
-    a {
-      color: #fee2e2;
-      text-decoration: none;
-      margin-left: 1rem;
     }
 
     main {
@@ -67,22 +56,18 @@
 
     button {
       margin-top: 1rem;
-      background: var(--accent);
-      color: white;
       border: none;
-      padding: .55rem 1.2rem;
+      padding: .45rem 1rem;
       border-radius: 999px;
       cursor: pointer;
+      color: #fff;
+      background: #dc2626;
+      font-size: .85rem;
     }
 
-    button.secondary {
-      background: #6b7280;
-    }
-
-    .status {
-      margin-top: .75rem;
-      font-size: .9rem;
-    }
+    button.secondary { background: #6b7280; }
+    button.edit { background: #2563eb; }
+    button.delete { background: #ef4444; }
 
     .files {
       margin-top: 1rem;
@@ -90,27 +75,25 @@
       border-radius: 8px;
       padding: .75rem;
       background: #f9fafb;
-      max-height: 260px;
+      max-height: 280px;
       overflow-y: auto;
     }
 
     .row {
-      display: flex;
-      justify-content: space-between;
+      display: grid;
+      grid-template-columns: 1fr auto auto;
+      gap: .4rem;
       align-items: center;
       padding: .4rem 0;
       border-bottom: 1px solid #e5e7eb;
       font-size: .85rem;
     }
 
-    .row:last-child {
-      border-bottom: none;
-    }
+    .row:last-child { border-bottom: none; }
 
-    .delete {
-      background: #ef4444;
-      font-size: .75rem;
-      padding: .25rem .7rem;
+    .status {
+      margin-top: .6rem;
+      font-size: .85rem;
     }
   </style>
 </head>
@@ -120,10 +103,7 @@
 <header>
   <div>
     <strong>Chemistry Cycle – Admin</strong>
-    <nav>
-      <a href="index.html">Home</a>
-      <a href="branches.html">Notes</a>
-    </nav>
+    <span>Upload • Edit • Delete</span>
   </div>
 </header>
 
@@ -136,18 +116,12 @@
     <form id="uploadForm">
       <label>Subject</label>
       <select id="subject">
-        <option>IPP</option>
-        <option>EEE</option>
-        <option>MAT</option>
-        <option>CHY</option>
-        <option>EV</option>
-        <option>ESS</option>
-        <option>BIO</option>
-        <option>ADLD</option>
-        <option>BE</option>
+        <option>IPP</option><option>EEE</option><option>MAT</option>
+        <option>CHY</option><option>EV</option><option>ESS</option>
+        <option>BIO</option><option>ADLD</option><option>BE</option>
       </select>
 
-      <label>Title / Chapter (shown to users)</label>
+      <label>Title (shown on website)</label>
       <input id="title" placeholder="Unit 1 – Atomic Structure">
 
       <label>PDF File</label>
@@ -156,7 +130,7 @@
       <button>Upload</button>
     </form>
 
-    <div id="status" class="status"></div>
+    <div id="uploadStatus" class="status"></div>
   </div>
 
   <!-- MANAGE -->
@@ -164,15 +138,9 @@
     <h2>Manage Files</h2>
 
     <select id="manageSubject">
-      <option>IPP</option>
-      <option>EEE</option>
-      <option>MAT</option>
-      <option>CHY</option>
-      <option>EV</option>
-      <option>ESS</option>
-      <option>BIO</option>
-      <option>ADLD</option>
-      <option>BE</option>
+      <option>IPP</option><option>EEE</option><option>MAT</option>
+      <option>CHY</option><option>EV</option><option>ESS</option>
+      <option>BIO</option><option>ADLD</option><option>BE</option>
     </select>
 
     <button id="load" class="secondary">Load Files</button>
@@ -190,54 +158,45 @@
     'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJydmJieGJmY3JjcGdreHhmdWh2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQ1NzM1MzIsImV4cCI6MjA4MDE0OTUzMn0.Z8FYzhVSn0eMgQAWcXg9ul70AeSyWMid4dFtrhAZalQ'
   );
 
-  const uploadForm = document.getElementById('uploadForm');
-  const statusEl = document.getElementById('status');
+  const uploadStatus = document.getElementById('uploadStatus');
 
-  uploadForm.addEventListener('submit', async (e) => {
+  // UPLOAD
+  document.getElementById('uploadForm').onsubmit = async e => {
     e.preventDefault();
 
-    const subject = document.getElementById('subject').value;
+    const subject = subject.value;
     const title = document.getElementById('title').value.trim();
     const file = document.getElementById('file').files[0];
 
     if (!title || !file) {
-      statusEl.textContent = "Title and PDF are required.";
-      statusEl.style.color = "#b91c1c";
+      uploadStatus.textContent = "Title and PDF required.";
+      uploadStatus.style.color = "#b91c1c";
       return;
     }
 
-    const safeTitle = title.replace(/[^a-zA-Z0-9 _-]/g, '');
-    const path = `chemistry_cycle/${subject}/${safeTitle}.pdf`;
+    const safe = title.replace(/[^a-zA-Z0-9 _-]/g, '');
+    const path = `chemistry_cycle/${subject}/${safe}.pdf`;
 
-    statusEl.textContent = "Uploading...";
-    statusEl.style.color = "#374151";
+    uploadStatus.textContent = "Uploading…";
 
-    const { error } = await supabase
-      .storage
-      .from('notes')
+    const { error } = await supabase.storage.from('notes')
       .upload(path, file, { upsert: true });
 
-    if (error) {
-      statusEl.textContent = error.message;
-      statusEl.style.color = "#b91c1c";
-      return;
-    }
+    uploadStatus.textContent = error ? error.message : "Upload successful!";
+    uploadStatus.style.color = error ? "#b91c1c" : "#15803d";
+    e.target.reset();
+  };
 
-    statusEl.textContent = "Upload successful!";
-    statusEl.style.color = "#15803d";
-    uploadForm.reset();
-  });
-
+  // LOAD + EDIT + DELETE
   async function loadFiles(subject) {
     const box = document.getElementById('files');
-    box.textContent = "Loading...";
+    box.textContent = "Loading…";
 
-    const { data, error } = await supabase
-      .storage
+    const { data } = await supabase.storage
       .from('notes')
       .list(`chemistry_cycle/${subject}`);
 
-    if (error || !data.length) {
+    if (!data || !data.length) {
       box.textContent = "No files found.";
       return;
     }
@@ -251,9 +210,37 @@
       const name = document.createElement('span');
       name.textContent = file.name.replace('.pdf', '');
 
+      // EDIT
+      const edit = document.createElement('button');
+      edit.textContent = "Edit";
+      edit.className = "edit";
+
+      edit.onclick = async () => {
+        const newTitle = prompt("Enter new title", name.textContent);
+        if (!newTitle) return;
+
+        const safe = newTitle.replace(/[^a-zA-Z0-9 _-]/g, '');
+        const oldPath = `chemistry_cycle/${subject}/${file.name}`;
+        const newPath = `chemistry_cycle/${subject}/${safe}.pdf`;
+
+        // copy → delete (rename workaround)
+        const { error: copyErr } = await supabase.storage
+          .from('notes')
+          .copy(oldPath, newPath);
+
+        if (copyErr) {
+          alert(copyErr.message);
+          return;
+        }
+
+        await supabase.storage.from('notes').remove([oldPath]);
+        loadFiles(subject);
+      };
+
+      // DELETE
       const del = document.createElement('button');
-      del.className = "delete";
       del.textContent = "Delete";
+      del.className = "delete";
 
       del.onclick = async () => {
         if (!confirm(`Delete "${file.name}"?`)) return;
@@ -263,14 +250,13 @@
         row.remove();
       };
 
-      row.append(name, del);
+      row.append(name, edit, del);
       box.appendChild(row);
     });
   }
 
-  document.getElementById('load').onclick = () => {
+  document.getElementById('load').onclick = () =>
     loadFiles(document.getElementById('manageSubject').value);
-  };
 </script>
 
 </body>
