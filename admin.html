@@ -2,191 +2,140 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Admin Upload - Chemistry Cycle</title>
+  <title>Chemistry Cycle – Admin</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   <style>
     :root {
       --accent: #dc2626;
       --accent-dark: #b91c1c;
-      --accent-light: #fee2e2;
     }
 
     body {
       margin: 0;
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      font-family: system-ui, sans-serif;
       background: #f8fafc;
     }
 
-    .site-header {
+    header {
       background: linear-gradient(90deg, var(--accent-dark), var(--accent));
-      color: white;
+      color: #fff;
       padding: 1rem;
     }
 
-    .header-inner {
-      max-width: 1100px;
+    header div {
+      max-width: 1000px;
       margin: auto;
       display: flex;
       justify-content: space-between;
       align-items: center;
     }
 
-    .nav-link {
+    a {
       color: #fee2e2;
       text-decoration: none;
       margin-left: 1rem;
     }
 
-    .container {
+    main {
       max-width: 900px;
-      margin: auto;
-      padding: 2rem 1rem;
+      margin: 2rem auto;
+      padding: 1rem;
     }
 
-    .admin-container {
-      background: white;
+    .card {
+      background: #fff;
       padding: 1.5rem;
       border-radius: 12px;
-      box-shadow: 0 12px 30px rgba(0,0,0,0.08);
-      display: flex;
-      flex-direction: column;
-      gap: 2rem;
+      box-shadow: 0 12px 30px rgba(0,0,0,.08);
+      margin-bottom: 2rem;
     }
 
-    .admin-field label {
+    label {
       display: block;
-      margin-bottom: 0.3rem;
-      font-size: 0.9rem;
+      margin-top: 1rem;
+      font-size: .9rem;
     }
 
-    .admin-input,
-    .admin-select {
+    input, select {
       width: 100%;
-      padding: 0.45rem;
+      padding: .45rem;
       border-radius: 8px;
       border: 1px solid #d1d5db;
+      margin-top: .3rem;
     }
 
-    .btn {
+    button {
+      margin-top: 1rem;
       background: var(--accent);
       color: white;
       border: none;
-      padding: 0.5rem 1.1rem;
+      padding: .55rem 1.2rem;
       border-radius: 999px;
       cursor: pointer;
-      margin-top: 0.5rem;
     }
 
-    .btn:hover {
-      background: var(--accent-dark);
-    }
-
-    .btn-secondary {
+    button.secondary {
       background: #6b7280;
     }
 
-    .files-list {
+    .status {
+      margin-top: .75rem;
+      font-size: .9rem;
+    }
+
+    .files {
+      margin-top: 1rem;
       border: 1px solid #e5e7eb;
       border-radius: 8px;
-      padding: 0.75rem;
+      padding: .75rem;
       background: #f9fafb;
-      max-height: 250px;
+      max-height: 260px;
       overflow-y: auto;
     }
 
-    .file-row {
+    .row {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 0.35rem 0;
+      padding: .4rem 0;
       border-bottom: 1px solid #e5e7eb;
-      font-size: 0.85rem;
+      font-size: .85rem;
     }
 
-    .file-row:last-child {
+    .row:last-child {
       border-bottom: none;
     }
 
-    .delete-btn {
+    .delete {
       background: #ef4444;
-      color: white;
-      border: none;
-      padding: 0.25rem 0.7rem;
-      border-radius: 999px;
-      font-size: 0.75rem;
-      cursor: pointer;
-    }
-
-    .delete-btn:hover {
-      background: #b91c1c;
-    }
-
-    footer {
-      text-align: center;
-      font-size: 0.85rem;
-      padding: 1rem;
-      color: #6b7280;
+      font-size: .75rem;
+      padding: .25rem .7rem;
     }
   </style>
 </head>
 
 <body>
 
-<header class="site-header">
-  <div class="header-inner">
+<header>
+  <div>
     <strong>Chemistry Cycle – Admin</strong>
     <nav>
-      <a href="index.html" class="nav-link">Home</a>
-      <a href="branches.html" class="nav-link">Notes</a>
+      <a href="index.html">Home</a>
+      <a href="branches.html">Notes</a>
     </nav>
   </div>
 </header>
 
-<main class="container">
-  <div class="admin-container">
+<main>
 
-    <!-- UPLOAD -->
-    <section>
-      <h2>Upload Subject PDF</h2>
+  <!-- UPLOAD -->
+  <div class="card">
+    <h2>Upload PDF</h2>
 
-      <form id="uploadForm">
-        <div class="admin-field">
-          <label>Subject</label>
-          <select id="subjectSelect" class="admin-select">
-            <option>IPP</option>
-            <option>EEE</option>
-            <option>MAT</option>
-            <option>CHY</option>
-            <option>EV</option>
-            <option>ESS</option>
-            <option>BIO</option>
-            <option>ADLD</option>
-            <option>BE</option>
-          </select>
-        </div>
-
-        <div class="admin-field">
-          <label>Title / Chapter (shown on website)</label>
-          <input id="titleInput" class="admin-input" placeholder="Unit 1 – Atomic Structure">
-        </div>
-
-        <div class="admin-field">
-          <label>PDF File</label>
-          <input id="fileInput" type="file" accept="application/pdf">
-        </div>
-
-        <button class="btn">Upload</button>
-      </form>
-
-      <p id="status"></p>
-    </section>
-
-    <!-- MANAGE -->
-    <section>
-      <h2>Manage Uploaded Files</h2>
-
-      <select id="manageSubjectSelect" class="admin-select">
+    <form id="uploadForm">
+      <label>Subject</label>
+      <select id="subject">
         <option>IPP</option>
         <option>EEE</option>
         <option>MAT</option>
@@ -198,54 +147,67 @@
         <option>BE</option>
       </select>
 
-      <button id="loadFilesBtn" class="btn btn-secondary">Load Files</button>
+      <label>Title / Chapter (shown to users)</label>
+      <input id="title" placeholder="Unit 1 – Atomic Structure">
 
-      <div id="filesList" class="files-list">
-        <span style="color:#9ca3af;">No files loaded.</span>
-      </div>
-    </section>
+      <label>PDF File</label>
+      <input id="file" type="file" accept="application/pdf">
 
+      <button>Upload</button>
+    </form>
+
+    <div id="status" class="status"></div>
   </div>
-</main>
 
-<footer>
-  © 2025 Chemistry Cycle • By Sujanraj
-</footer>
+  <!-- MANAGE -->
+  <div class="card">
+    <h2>Manage Files</h2>
+
+    <select id="manageSubject">
+      <option>IPP</option>
+      <option>EEE</option>
+      <option>MAT</option>
+      <option>CHY</option>
+      <option>EV</option>
+      <option>ESS</option>
+      <option>BIO</option>
+      <option>ADLD</option>
+      <option>BE</option>
+    </select>
+
+    <button id="load" class="secondary">Load Files</button>
+
+    <div id="files" class="files">No files loaded.</div>
+  </div>
+
+</main>
 
 <script type="module">
   import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
 
   const supabase = createClient(
     'https://brvbbxbfcrcpgkxxfuhv.supabase.co',
-    'YOUR_ANON_KEY_HERE'
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJydmJieGJmY3JjcGdreHhmdWh2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQ1NzM1MzIsImV4cCI6MjA4MDE0OTUzMn0.Z8FYzhVSn0eMgQAWcXg9ul70AeSyWMid4dFtrhAZalQ'
   );
 
   const uploadForm = document.getElementById('uploadForm');
-  const fileInput = document.getElementById('fileInput');
-  const titleInput = document.getElementById('titleInput');
-  const subjectSelect = document.getElementById('subjectSelect');
   const statusEl = document.getElementById('status');
-
-  const manageSubjectSelect = document.getElementById('manageSubjectSelect');
-  const loadFilesBtn = document.getElementById('loadFilesBtn');
-  const filesList = document.getElementById('filesList');
 
   uploadForm.addEventListener('submit', async (e) => {
     e.preventDefault();
 
-    const file = fileInput.files[0];
-    const subject = subjectSelect.value;
-    const title = titleInput.value.trim();
+    const subject = document.getElementById('subject').value;
+    const title = document.getElementById('title').value.trim();
+    const file = document.getElementById('file').files[0];
 
-    if (!file || !title) {
+    if (!title || !file) {
       statusEl.textContent = "Title and PDF are required.";
       statusEl.style.color = "#b91c1c";
       return;
     }
 
     const safeTitle = title.replace(/[^a-zA-Z0-9 _-]/g, '');
-    const finalName = `${safeTitle}.pdf`;
-    const path = `chemistry_cycle/${subject}/${finalName}`;
+    const path = `chemistry_cycle/${subject}/${safeTitle}.pdf`;
 
     statusEl.textContent = "Uploading...";
     statusEl.style.color = "#374151";
@@ -263,12 +225,12 @@
 
     statusEl.textContent = "Upload successful!";
     statusEl.style.color = "#15803d";
-    fileInput.value = "";
-    titleInput.value = "";
+    uploadForm.reset();
   });
 
   async function loadFiles(subject) {
-    filesList.innerHTML = "Loading...";
+    const box = document.getElementById('files');
+    box.textContent = "Loading...";
 
     const { data, error } = await supabase
       .storage
@@ -276,35 +238,38 @@
       .list(`chemistry_cycle/${subject}`);
 
     if (error || !data.length) {
-      filesList.innerHTML = "No files found.";
+      box.textContent = "No files found.";
       return;
     }
 
-    filesList.innerHTML = "";
+    box.innerHTML = "";
+
     data.forEach(file => {
       const row = document.createElement('div');
-      row.className = "file-row";
+      row.className = "row";
 
       const name = document.createElement('span');
       name.textContent = file.name.replace('.pdf', '');
 
       const del = document.createElement('button');
-      del.className = "delete-btn";
+      del.className = "delete";
       del.textContent = "Delete";
 
       del.onclick = async () => {
         if (!confirm(`Delete "${file.name}"?`)) return;
-        await supabase.storage.from('notes').remove([`chemistry_cycle/${subject}/${file.name}`]);
+        await supabase.storage
+          .from('notes')
+          .remove([`chemistry_cycle/${subject}/${file.name}`]);
         row.remove();
       };
 
       row.append(name, del);
-      filesList.appendChild(row);
+      box.appendChild(row);
     });
   }
 
-  loadFilesBtn.onclick = () => {
-    loadFiles(manageSubjectSelect.value);
+  document.getElementById('load').onclick = () => {
+    loadFiles(document.getElementById('manageSubject').value);
   };
 </script>
 
