@@ -1,51 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>Chemistry Cycle - Notes</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <link rel="stylesheet" href="style.css" />
-
-  <style>
-    .subjects {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-      gap: 0.75rem;
-      margin-top: 1.5rem;
-    }
-
-    .files-box {
-      margin-top: 1.5rem;
-      background: #ffffff;
-      border-radius: 10px;
-      padding: 1rem;
-      box-shadow: 0 8px 20px rgba(0,0,0,0.06);
-    }
-
-    .file-item {
-      padding: 0.4rem 0;
-      border-bottom: 1px solid #e5e7eb;
-      font-size: 0.9rem;
-    }
-
-    .file-item:last-child {
-      border-bottom: none;
-    }
-
-    .file-item a {
-      color: #dc2626;
-      text-decoration: none;
-    }
-
-    .file-item a:hover {
-      text-decoration: underline;
-    }
-
-    .clear-btn {
-      margin-top: 10px;
-      background: #6b7280;
-    }
-  </style>
+<meta charset="UTF-8">
+<title>Chemistry Cycle</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="style.css">
 </head>
 
 <body>
@@ -57,69 +16,52 @@
 </header>
 
 <main class="container">
-  <section class="hero">
-    <h1>Chemistry Cycle Notes</h1>
-    <p>Select a subject to view available PDFs.</p>
+<section class="hero">
 
-    <div class="subjects">
-      <button class="btn" data-subject="IPP">IPP</button>
-      <button class="btn" data-subject="EEE">EEE</button>
-      <button class="btn" data-subject="MAT">MAT</button>
-      <button class="btn" data-subject="CHY">CHY</button>
-      <button class="btn" data-subject="EV">EV</button>
-      <button class="btn" data-subject="ESS">ESS</button>
-      <button class="btn" data-subject="BIO">BIO</button>
-      <button class="btn" data-subject="ADLD">ADLD</button>
-      <button class="btn" data-subject="BE">BE</button>
-    </div>
+<h1>Chemistry Cycle Notes</h1>
+<p>Select subject</p>
 
-    <!-- CLEAR CACHE -->
-    <button onclick="clearCache()" class="btn clear-btn">
-      Clear Cache
-    </button>
+<div class="subjects">
+<button class="btn" data-subject="IPP">IPP</button>
+<button class="btn" data-subject="EEE">EEE</button>
+<button class="btn" data-subject="MAT">MAT</button>
+<button class="btn" data-subject="CHY">CHY</button>
+<button class="btn" data-subject="EV">EV</button>
+<button class="btn" data-subject="ESS">ESS</button>
+<button class="btn" data-subject="BIO">BIO</button>
+<button class="btn" data-subject="ADLD">ADLD</button>
+<button class="btn" data-subject="BE">BE</button>
+</div>
 
-    <div id="filesBox" class="files-box" style="display:none;"></div>
-  </section>
+<button onclick="clearCache()" class="btn clear-btn">Clear Cache</button>
+
+<div id="filesBox" class="files-box" style="display:none;"></div>
+
+</section>
 </main>
 
 <footer class="site-footer">
-  <p>&copy; 2025 Chemistry Cycle</p>
+<p>© 2025 Chemistry Cycle</p>
 </footer>
 
 <script type="module">
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
 
-/* ✅ MAKE SUPABASE GLOBAL (FIXES YOUR ERROR) */
-window.supabase = createClient(
-  'https://brvbbxbfcrcpgkxxfuhv.supabase.co',
-  'YOUR_ANON_KEY'
-);
+const SUPABASE_URL = 'https://brvbbxbfcrcpgkxxfuhv.supabase.co';
+const SUPABASE_ANON_KEY = 'YOUR_KEY';
+
+window.supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 const filesBox = document.getElementById('filesBox');
 
 let cache = {};
 let loading = false;
 
-/* CLEAR CACHE */
 window.clearCache = () => {
   cache = {};
-  filesBox.innerHTML = "<p>Cache cleared.</p>";
+  filesBox.innerHTML = "Cache cleared";
 };
 
-/* AUTO-DETECT FOLDER STRUCTURE */
-async function detectFolder(subject) {
-  // Try chemistry_cycle first
-  let test = await supabase.storage.from('notes').list(`chemistry_cycle/${subject}`);
-
-  if (test.data && test.data.length > 0) {
-    return `chemistry_cycle/${subject}`;
-  }
-
-  // fallback
-  return subject;
-}
-
-/* LOAD SUBJECT */
 async function loadSubject(subject) {
   if (loading) return;
   loading = true;
@@ -131,18 +73,14 @@ async function loadSubject(subject) {
   }
 
   filesBox.style.display = 'block';
-  filesBox.innerHTML = `<p>Loading ${subject} files...</p>`;
-
-  const folder = await detectFolder(subject);
+  filesBox.innerHTML = "Loading...";
 
   const { data, error } = await supabase.storage
     .from('notes')
-    .list(folder, {
-      sortBy: { column: 'name', order: 'asc' }
-    });
+    .list(subject);
 
-  if (error || !data || data.length === 0) {
-    filesBox.innerHTML = `<p>No files found for ${subject}.</p>`;
+  if (error || !data.length) {
+    filesBox.innerHTML = "No files found";
     loading = false;
     return;
   }
@@ -153,39 +91,26 @@ async function loadSubject(subject) {
   loading = false;
 }
 
-/* RENDER FILES */
 async function render(subject, files) {
-  filesBox.innerHTML = `<h3>${subject} Notes</h3>`;
-
-  const folder = await detectFolder(subject);
+  filesBox.innerHTML = `<h3>${subject}</h3>`;
 
   for (const file of files) {
-    const path = `${folder}/${file.name}`;
+    const path = `${subject}/${file.name}`;
 
     const { data } = await supabase.storage
       .from('notes')
       .createSignedUrl(path, 60);
 
-    if (!data) continue;
-
     const div = document.createElement('div');
-    div.className = 'file-item';
+    div.className = "file-item";
 
-    div.innerHTML = `
-      <a href="${data.signedUrl}" target="_blank">
-        ${file.name.replace('.pdf','')}
-      </a>
-    `;
-
+    div.innerHTML = `<a href="${data.signedUrl}" target="_blank">${file.name}</a>`;
     filesBox.appendChild(div);
   }
 }
 
-/* BUTTON EVENTS */
 document.querySelectorAll('[data-subject]').forEach(btn => {
-  btn.addEventListener('click', () => {
-    loadSubject(btn.dataset.subject);
-  });
+  btn.onclick = () => loadSubject(btn.dataset.subject);
 });
 </script>
 
