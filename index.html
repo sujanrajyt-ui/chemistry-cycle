@@ -4,6 +4,10 @@
 <meta charset="UTF-8">
 <title>Chemistry Cycle</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
+
+<!-- ✅ FIX favicon error -->
+<link rel="icon" href="data:,">
+
 <link rel="stylesheet" href="style.css">
 </head>
 
@@ -19,6 +23,7 @@
 <section class="hero">
 
 <h1>Chemistry Cycle Notes</h1>
+<p>Select subject</p>
 
 <div class="subjects">
 <button class="btn" data-subject="IPP">IPP</button>
@@ -48,7 +53,7 @@ import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js
 
 const supabase = createClient(
   'https://brvbbxbfcrcpgkxxfuhv.supabase.co',
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJydmJieGJmY3JjcGdreHhmdWh2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQ1NzM1MzIsImV4cCI6MjA4MDE0OTUzMn0.Z8FYzhVSn0eMgQAWcXg9ul70AeSyWMid4dFtrhAZalQ'
+  'YOUR_ANON_KEY'
 );
 
 const filesBox = document.getElementById('filesBox');
@@ -74,16 +79,19 @@ async function loadSubject(subject) {
   filesBox.style.display = 'block';
   filesBox.innerHTML = "Loading...";
 
-  const { data } = await supabase.storage.from('notes').list(subject);
+  const { data, error } = await supabase.storage
+    .from('notes')
+    .list(subject);
 
-  if (!data.length) {
-    filesBox.innerHTML = "No files";
+  if (error || !data || data.length === 0) {
+    filesBox.innerHTML = "No files found";
     loading = false;
     return;
   }
 
   cache[subject] = data;
   render(subject, data);
+
   loading = false;
 }
 
@@ -91,9 +99,13 @@ async function render(subject, files) {
   filesBox.innerHTML = `<h3>${subject}</h3>`;
 
   for (const file of files) {
+    const path = `${subject}/${file.name}`;
+
     const { data } = await supabase.storage
       .from('notes')
-      .createSignedUrl(`${subject}/${file.name}`, 60);
+      .createSignedUrl(path, 60);
+
+    if (!data) continue;
 
     const div = document.createElement('div');
     div.className = "file-item";
