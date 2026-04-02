@@ -6,21 +6,73 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
 <style>
-body { margin:0; font-family:system-ui; background:#f8fafc; }
-header { background:#dc2626; color:white; padding:1rem; }
-main { max-width:900px; margin:2rem auto; padding:1rem; }
-.card { background:white; padding:1.5rem; border-radius:12px; margin-bottom:2rem; }
-input, select { width:100%; padding:0.5rem; margin-top:0.5rem; }
-button { margin-top:1rem; padding:0.5rem 1rem; border:none; border-radius:8px; background:#dc2626; color:white; }
-.status { margin-top:0.5rem; }
+  body { margin:0; font-family:system-ui; background:#f8fafc; }
+
+  header {
+    background:#dc2626;
+    color:white;
+    padding:1rem;
+  }
+
+  main {
+    max-width:900px;
+    margin:2rem auto;
+    padding:1rem;
+  }
+
+  .card {
+    background:white;
+    padding:1.5rem;
+    border-radius:12px;
+    margin-bottom:2rem;
+  }
+
+  input, select {
+    width:100%;
+    padding:0.5rem;
+    margin-top:0.5rem;
+  }
+
+  button {
+    margin-top:1rem;
+    padding:0.5rem 1rem;
+    border:none;
+    border-radius:8px;
+    color:white;
+    background:#dc2626;
+    cursor:pointer;
+  }
+
+  .secondary { background:#6b7280; }
+  .edit { background:#2563eb; }
+  .delete { background:#ef4444; }
+
+  .files {
+    margin-top:1rem;
+    background:#f9fafb;
+    padding:1rem;
+    border-radius:8px;
+    max-height:300px;
+    overflow:auto;
+  }
+
+  .row {
+    display:grid;
+    grid-template-columns:1fr auto auto;
+    gap:0.5rem;
+    padding:0.4rem 0;
+    border-bottom:1px solid #e5e7eb;
+  }
 </style>
 </head>
 
 <body>
 
-<header><strong>Chemistry Cycle Admin</strong></header>
+<header><strong>Chemistry Cycle – Admin</strong></header>
 
 <main>
+
+<!-- UPLOAD -->
 <div class="card">
 <h2>Upload PDF</h2>
 
@@ -37,8 +89,24 @@ button { margin-top:1rem; padding:0.5rem 1rem; border:none; border-radius:8px; b
 <button type="submit">Upload</button>
 </form>
 
-<div id="uploadStatus" class="status"></div>
+<div id="uploadStatus"></div>
 </div>
+
+<!-- MANAGE -->
+<div class="card">
+<h2>Manage Files</h2>
+
+<select id="manageSubject">
+<option>IPP</option><option>EEE</option><option>MAT</option>
+<option>CHY</option><option>EV</option><option>ESS</option>
+<option>BIO</option><option>ADLD</option><option>BE</option>
+</select>
+
+<button id="load" class="secondary">Load Files</button>
+
+<div id="files" class="files">No files loaded.</div>
+</div>
+
 </main>
 
 <script type="module">
@@ -49,10 +117,12 @@ const supabase = createClient(
   'YOUR_ANON_KEY'
 );
 
-const form = document.getElementById('uploadForm');
-const status = document.getElementById('uploadStatus');
+const uploadForm = document.getElementById('uploadForm');
+const uploadStatus = document.getElementById('uploadStatus');
+const filesBox = document.getElementById('files');
 
-form.addEventListener('submit', async (e) => {
+// ===== UPLOAD =====
+uploadForm.addEventListener('submit', async (e) => {
   e.preventDefault();
 
   const subject = document.getElementById('subject').value;
@@ -60,19 +130,19 @@ form.addEventListener('submit', async (e) => {
   const file = document.getElementById('file').files[0];
 
   if (!subject || !title || !file) {
-    status.textContent = "All fields required";
+    uploadStatus.textContent = "All fields required";
     return;
   }
 
   if (file.size > 5 * 1024 * 1024) {
-    status.textContent = "Max 5MB file allowed";
+    uploadStatus.textContent = "Max 5MB allowed";
     return;
   }
 
   const safeTitle = title.replace(/[^a-zA-Z0-9 _-]/g, '');
   const path = `chemistry_cycle/${subject}/${safeTitle}.pdf`;
 
-  status.textContent = "Uploading...";
+  uploadStatus.textContent = "Uploading...";
 
   const { error } = await supabase.storage
     .from('notes')
@@ -82,13 +152,79 @@ form.addEventListener('submit', async (e) => {
     });
 
   if (error) {
-    status.textContent = error.message;
+    uploadStatus.textContent = error.message;
     return;
   }
 
-  status.textContent = "Uploaded!";
-  form.reset();
+  uploadStatus.textContent = "Uploaded!";
+  uploadForm.reset();
 });
+
+// ===== LOAD FILES =====
+async function loadFiles(subject) {
+  filesBox.textContent = "Loading...";
+
+  const { data, error } = await supabase.storage
+    .from('notes')
+    .list(`chemistry_cycle/${subject}`);
+
+  if (error || !data.length) {
+    filesBox.textContent = "No files";
+    return;
+  }
+
+  filesBox.innerHTML = "";
+
+  data.forEach(file => {
+    const row = document.createElement('div');
+    row.className = "row";
+
+    const name = document.createElement('span');
+    name.textContent = file.name.replace('.pdf','');
+
+    // EDIT
+    const editBtn = document.createElement('button');
+    editBtn.textContent = "Edit";
+    editBtn.className = "edit";
+
+    editBtn.onclick = async () => {
+      const newTitle = prompt("New title", name.textContent);
+      if (!newTitle) return;
+
+      const safe = newTitle.replace(/[^a-zA-Z0-9 _-]/g, '');
+      const oldPath = `chemistry_cycle/${subject}/${file.name}`;
+      const newPath = `chemistry_cycle/${subject}/${safe}.pdf`;
+
+      await supabase.storage.from('notes').copy(oldPath, newPath);
+      await supabase.storage.from('notes').remove([oldPath]);
+
+      loadFiles(subject);
+    };
+
+    // DELETE
+    const delBtn = document.createElement('button');
+    delBtn.textContent = "Delete";
+    delBtn.className = "delete";
+
+    delBtn.onclick = async () => {
+      if (!confirm("Delete file?")) return;
+
+      await supabase.storage
+        .from('notes')
+        .remove([`chemistry_cycle/${subject}/${file.name}`]);
+
+      row.remove();
+    };
+
+    row.append(name, editBtn, delBtn);
+    filesBox.appendChild(row);
+  });
+}
+
+document.getElementById('load').onclick = () => {
+  const subject = document.getElementById('manageSubject').value;
+  loadFiles(subject);
+};
 </script>
 
 </body>
