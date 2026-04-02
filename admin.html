@@ -6,146 +6,97 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
 <style>
-  body {
-    margin: 0;
-    font-family: system-ui, sans-serif;
-    background: #f8fafc;
-  }
+body {
+  margin: 0;
+  font-family: system-ui, sans-serif;
+  background: #f8fafc;
+}
 
-  header {
-    background: linear-gradient(90deg, #b91c1c, #dc2626);
-    color: white;
-    padding: 1rem;
-  }
+header {
+  background: linear-gradient(90deg, #b91c1c, #dc2626);
+  color: white;
+  padding: 1rem;
+}
 
-  header div {
-    max-width: 1000px;
-    margin: auto;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
+main {
+  max-width: 900px;
+  margin: 2rem auto;
+  padding: 1rem;
+}
 
-  main {
-    max-width: 900px;
-    margin: 2rem auto;
-    padding: 1rem;
-  }
+.card {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 12px;
+  margin-bottom: 2rem;
+}
 
-  .card {
-    background: white;
-    padding: 1.5rem;
-    border-radius: 12px;
-    box-shadow: 0 12px 30px rgba(0,0,0,0.08);
-    margin-bottom: 2rem;
-  }
+input, select {
+  width: 100%;
+  padding: 0.5rem;
+  margin-top: 0.5rem;
+}
 
-  label {
-    display: block;
-    margin-top: 1rem;
-    font-size: 0.9rem;
-  }
+button {
+  margin-top: 1rem;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  border: none;
+  color: white;
+  background: #dc2626;
+  cursor: pointer;
+}
 
-  input, select {
-    width: 100%;
-    padding: 0.45rem;
-    border-radius: 8px;
-    border: 1px solid #d1d5db;
-    margin-top: 0.3rem;
-  }
+.files {
+  margin-top: 1rem;
+}
 
-  button {
-    margin-top: 1rem;
-    padding: 0.45rem 1rem;
-    border-radius: 999px;
-    border: none;
-    cursor: pointer;
-    font-size: 0.85rem;
-    color: white;
-    background: #dc2626;
-  }
-
-  button.secondary { background: #6b7280; }
-  button.edit { background: #2563eb; }
-  button.delete { background: #ef4444; }
-
-  .status {
-    margin-top: 0.6rem;
-    font-size: 0.85rem;
-  }
-
-  .files {
-    margin-top: 1rem;
-    border: 1px solid #e5e7eb;
-    border-radius: 8px;
-    padding: 0.75rem;
-    background: #f9fafb;
-    max-height: 300px;
-    overflow-y: auto;
-  }
-
-  .row {
-    display: grid;
-    grid-template-columns: 1fr auto auto;
-    gap: 0.4rem;
-    align-items: center;
-    padding: 0.4rem 0;
-    border-bottom: 1px solid #e5e7eb;
-    font-size: 0.85rem;
-  }
-
-  .row:last-child {
-    border-bottom: none;
-  }
+.row {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
 </style>
 </head>
 
 <body>
 
-<header>
-  <div>
-    <strong>Chemistry Cycle – Admin</strong>
-    <span>Upload • Edit • Delete</span>
-  </div>
-</header>
+<header>Chemistry Cycle – Admin</header>
 
 <main>
 
 <div class="card">
-  <h2>Upload PDF</h2>
+<h2>Upload PDF</h2>
 
-  <form id="uploadForm">
-    <label>Subject</label>
-    <select id="subject">
-      <option>IPP</option><option>EEE</option><option>MAT</option>
-      <option>CHY</option><option>EV</option><option>ESS</option>
-      <option>BIO</option><option>ADLD</option><option>BE</option>
-    </select>
+<form id="uploadForm">
+<select id="subject">
+<option>IPP</option><option>EEE</option><option>MAT</option>
+<option>CHY</option><option>EV</option><option>ESS</option>
+<option>BIO</option><option>ADLD</option><option>BE</option>
+</select>
 
-    <label>Title</label>
-    <input id="title">
+<input id="title" placeholder="Title">
+<input id="file" type="file">
 
-    <label>PDF</label>
-    <input id="file" type="file">
+<button type="submit">Upload</button>
+</form>
 
-    <button type="submit">Upload</button>
-  </form>
-
-  <div id="uploadStatus" class="status"></div>
+<div id="status"></div>
 </div>
 
 <div class="card">
-  <h2>Manage Files</h2>
+<h2>Manage Files</h2>
 
-  <select id="manageSubject">
-    <option>IPP</option><option>EEE</option><option>MAT</option>
-    <option>CHY</option><option>EV</option><option>ESS</option>
-    <option>BIO</option><option>ADLD</option><option>BE</option>
-  </select>
+<select id="manageSubject">
+<option>IPP</option><option>EEE</option><option>MAT</option>
+<option>CHY</option><option>EV</option><option>ESS</option>
+<option>BIO</option><option>ADLD</option><option>BE</option>
+</select>
 
-  <button id="load" class="secondary">Load Files</button>
+<button id="load">Load Files</button>
 
-  <div id="files" class="files">No files loaded.</div>
+<div id="files" class="files"></div>
 </div>
 
 </main>
@@ -153,48 +104,39 @@
 <script type="module">
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
 
+/* BASIC PASSWORD */
 const ADMIN_PASSWORD = "1234";
-if (prompt("Password") !== ADMIN_PASSWORD) {
-  alert("Access denied");
-  throw new Error("Blocked");
-}
+if (prompt("Enter password") !== ADMIN_PASSWORD) throw new Error("Blocked");
 
 const supabase = createClient(
   'https://brvbbxbfcrcpgkxxfuhv.supabase.co',
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJydmJieGJmY3JjcGdreHhmdWh2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQ1NzM1MzIsImV4cCI6MjA4MDE0OTUzMn0.Z8FYzhVSn0eMgQAWcXg9ul70AeSyWMid4dFtrhAZalQ'
+  'YOUR_ANON_KEY'
 );
 
-const uploadForm = document.getElementById('uploadForm');
-const uploadStatus = document.getElementById('uploadStatus');
 const filesBox = document.getElementById('files');
 
+/* UPLOAD */
 uploadForm.addEventListener('submit', async (e) => {
   e.preventDefault();
 
   const subject = document.getElementById('subject').value;
-  const title = document.getElementById('title').value.trim();
+  const title = document.getElementById('title').value;
   const file = document.getElementById('file').files[0];
 
-  const path = `${subject}/${title}.pdf`;
-
-  uploadStatus.textContent = "Uploading...";
+  const path = `chemistry_cycle/${subject}/${title}.pdf`;
 
   const { error } = await supabase.storage
     .from('notes')
     .upload(path, file, { upsert: true });
 
-  if (error) return uploadStatus.textContent = error.message;
-
-  uploadStatus.textContent = "Uploaded!";
-  uploadForm.reset();
+  status.textContent = error ? error.message : "Uploaded successfully";
 });
 
+/* LOAD FILES */
 async function loadFiles(subject) {
-  filesBox.textContent = "Loading...";
-
   const { data } = await supabase.storage
     .from('notes')
-    .list(subject);
+    .list(`chemistry_cycle/${subject}`);
 
   filesBox.innerHTML = "";
 
@@ -204,31 +146,38 @@ async function loadFiles(subject) {
 
     row.innerHTML = `
       <span>${file.name}</span>
-      <button class="edit">Edit</button>
-      <button class="delete">Delete</button>
+      <button onclick="editFile('${subject}','${file.name}')">Edit</button>
+      <button onclick="deleteFile('${subject}','${file.name}')">Delete</button>
     `;
-
-    row.querySelector('.delete').onclick = async () => {
-      await supabase.storage.from('notes').remove([`${subject}/${file.name}`]);
-      row.remove();
-    };
-
-    row.querySelector('.edit').onclick = async () => {
-      const newName = prompt("New name");
-      if (!newName) return;
-
-      await supabase.storage.from('notes').copy(
-        `${subject}/${file.name}`,
-        `${subject}/${newName}.pdf`
-      );
-
-      await supabase.storage.from('notes').remove([`${subject}/${file.name}`]);
-      loadFiles(subject);
-    };
 
     filesBox.appendChild(row);
   });
 }
+
+/* DELETE */
+window.deleteFile = async (subject, name) => {
+  await supabase.storage
+    .from('notes')
+    .remove([`chemistry_cycle/${subject}/${name}`]);
+
+  loadFiles(subject);
+};
+
+/* EDIT */
+window.editFile = async (subject, name) => {
+  const newName = prompt("New name");
+  if (!newName) return;
+
+  await supabase.storage.from('notes').copy(
+    `chemistry_cycle/${subject}/${name}`,
+    `chemistry_cycle/${subject}/${newName}.pdf`
+  );
+
+  await supabase.storage.from('notes')
+    .remove([`chemistry_cycle/${subject}/${name}`]);
+
+  loadFiles(subject);
+};
 
 document.getElementById('load').onclick = () => {
   loadFiles(document.getElementById('manageSubject').value);
