@@ -6,150 +6,39 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
 <style>
-  body {
-    margin: 0;
-    font-family: system-ui, sans-serif;
-    background: #f8fafc;
-  }
-
-  header {
-    background: linear-gradient(90deg, #b91c1c, #dc2626);
-    color: white;
-    padding: 1rem;
-  }
-
-  header div {
-    max-width: 1000px;
-    margin: auto;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-
-  main {
-    max-width: 900px;
-    margin: 2rem auto;
-    padding: 1rem;
-  }
-
-  .card {
-    background: white;
-    padding: 1.5rem;
-    border-radius: 12px;
-    box-shadow: 0 12px 30px rgba(0,0,0,0.08);
-    margin-bottom: 2rem;
-  }
-
-  label {
-    display: block;
-    margin-top: 1rem;
-    font-size: 0.9rem;
-  }
-
-  input, select {
-    width: 100%;
-    padding: 0.45rem;
-    border-radius: 8px;
-    border: 1px solid #d1d5db;
-    margin-top: 0.3rem;
-  }
-
-  button {
-    margin-top: 1rem;
-    padding: 0.45rem 1rem;
-    border-radius: 999px;
-    border: none;
-    cursor: pointer;
-    font-size: 0.85rem;
-    color: white;
-    background: #dc2626;
-  }
-
-  button.secondary { background: #6b7280; }
-  button.edit { background: #2563eb; }
-  button.delete { background: #ef4444; }
-
-  .status {
-    margin-top: 0.6rem;
-    font-size: 0.85rem;
-  }
-
-  .files {
-    margin-top: 1rem;
-    border: 1px solid #e5e7eb;
-    border-radius: 8px;
-    padding: 0.75rem;
-    background: #f9fafb;
-    max-height: 300px;
-    overflow-y: auto;
-  }
-
-  .row {
-    display: grid;
-    grid-template-columns: 1fr auto auto;
-    gap: 0.4rem;
-    align-items: center;
-    padding: 0.4rem 0;
-    border-bottom: 1px solid #e5e7eb;
-    font-size: 0.85rem;
-  }
-
-  .row:last-child {
-    border-bottom: none;
-  }
+body { margin:0; font-family:system-ui; background:#f8fafc; }
+header { background:#dc2626; color:white; padding:1rem; }
+main { max-width:900px; margin:2rem auto; padding:1rem; }
+.card { background:white; padding:1.5rem; border-radius:12px; margin-bottom:2rem; }
+input, select { width:100%; padding:0.5rem; margin-top:0.5rem; }
+button { margin-top:1rem; padding:0.5rem 1rem; border:none; border-radius:8px; background:#dc2626; color:white; }
+.status { margin-top:0.5rem; }
 </style>
 </head>
 
 <body>
 
-<header>
-  <div>
-    <strong>Chemistry Cycle – Admin</strong>
-    <span>Upload • Edit • Delete</span>
-  </div>
-</header>
+<header><strong>Chemistry Cycle Admin</strong></header>
 
 <main>
-
-<!-- UPLOAD -->
 <div class="card">
-  <h2>Upload PDF</h2>
+<h2>Upload PDF</h2>
 
-  <form id="uploadForm">
-    <label>Subject</label>
-    <select id="subject">
-      <option>IPP</option><option>EEE</option><option>MAT</option>
-      <option>CHY</option><option>EV</option><option>ESS</option>
-      <option>BIO</option><option>ADLD</option><option>BE</option>
-    </select>
+<form id="uploadForm">
+<select id="subject">
+<option>IPP</option><option>EEE</option><option>MAT</option>
+<option>CHY</option><option>EV</option><option>ESS</option>
+<option>BIO</option><option>ADLD</option><option>BE</option>
+</select>
 
-    <label>Title (shown on website)</label>
-    <input id="title" placeholder="Unit 1 – Atomic Structure">
+<input id="title" placeholder="Title">
+<input id="file" type="file" accept="application/pdf">
 
-    <label>PDF File</label>
-    <input id="file" type="file" accept="application/pdf">
+<button type="submit">Upload</button>
+</form>
 
-    <button type="submit">Upload</button>
-  </form>
-
-  <div id="uploadStatus" class="status"></div>
+<div id="uploadStatus" class="status"></div>
 </div>
-
-<!-- MANAGE -->
-<div class="card">
-  <h2>Manage Files</h2>
-
-  <select id="manageSubject">
-    <option>IPP</option><option>EEE</option><option>MAT</option>
-    <option>CHY</option><option>EV</option><option>ESS</option>
-    <option>BIO</option><option>ADLD</option><option>BE</option>
-  </select>
-
-  <button id="load" class="secondary">Load Files</button>
-
-  <div id="files" class="files">No files loaded.</div>
-</div>
-
 </main>
 
 <script type="module">
@@ -157,15 +46,13 @@ import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js
 
 const supabase = createClient(
   'https://brvbbxbfcrcpgkxxfuhv.supabase.co',
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJydmJieGJmY3JjcGdreHhmdWh2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQ1NzM1MzIsImV4cCI6MjA4MDE0OTUzMn0.Z8FYzhVSn0eMgQAWcXg9ul70AeSyWMid4dFtrhAZalQ'
+  'YOUR_ANON_KEY'
 );
 
-const uploadForm = document.getElementById('uploadForm');
-const uploadStatus = document.getElementById('uploadStatus');
-const filesBox = document.getElementById('files');
+const form = document.getElementById('uploadForm');
+const status = document.getElementById('uploadStatus');
 
-// ===== UPLOAD =====
-uploadForm.addEventListener('submit', async (e) => {
+form.addEventListener('submit', async (e) => {
   e.preventDefault();
 
   const subject = document.getElementById('subject').value;
@@ -173,104 +60,35 @@ uploadForm.addEventListener('submit', async (e) => {
   const file = document.getElementById('file').files[0];
 
   if (!subject || !title || !file) {
-    uploadStatus.textContent = "Subject, title and PDF are required.";
-    uploadStatus.style.color = "#b91c1c";
+    status.textContent = "All fields required";
+    return;
+  }
+
+  if (file.size > 5 * 1024 * 1024) {
+    status.textContent = "Max 5MB file allowed";
     return;
   }
 
   const safeTitle = title.replace(/[^a-zA-Z0-9 _-]/g, '');
   const path = `chemistry_cycle/${subject}/${safeTitle}.pdf`;
 
-  uploadStatus.textContent = "Uploading…";
-  uploadStatus.style.color = "#374151";
+  status.textContent = "Uploading...";
 
-  const { error } = await supabase
-    .storage
+  const { error } = await supabase.storage
     .from('notes')
-    .upload(path, file, { upsert: true });
+    .upload(path, file, {
+      upsert: true,
+      cacheControl: "3600"
+    });
 
   if (error) {
-    uploadStatus.textContent = error.message;
-    uploadStatus.style.color = "#b91c1c";
+    status.textContent = error.message;
     return;
   }
 
-  uploadStatus.textContent = "Upload successful!";
-  uploadStatus.style.color = "#15803d";
-  uploadForm.reset();
+  status.textContent = "Uploaded!";
+  form.reset();
 });
-
-// ===== LOAD + EDIT + DELETE =====
-async function loadFiles(subject) {
-  filesBox.textContent = "Loading…";
-
-  const { data, error } = await supabase
-    .storage
-    .from('notes')
-    .list(`chemistry_cycle/${subject}`);
-
-  if (error || !data || data.length === 0) {
-    filesBox.textContent = "No files found.";
-    return;
-  }
-
-  filesBox.innerHTML = "";
-
-  data.forEach(file => {
-    const row = document.createElement('div');
-    row.className = "row";
-
-    const name = document.createElement('span');
-    name.textContent = file.name.replace('.pdf', '');
-
-    // EDIT
-    const editBtn = document.createElement('button');
-    editBtn.textContent = "Edit";
-    editBtn.className = "edit";
-
-    editBtn.onclick = async () => {
-      const newTitle = prompt("Enter new title", name.textContent);
-      if (!newTitle) return;
-
-      const safe = newTitle.replace(/[^a-zA-Z0-9 _-]/g, '');
-      const oldPath = `chemistry_cycle/${subject}/${file.name}`;
-      const newPath = `chemistry_cycle/${subject}/${safe}.pdf`;
-
-      const { error: copyErr } = await supabase.storage
-        .from('notes')
-        .copy(oldPath, newPath);
-
-      if (copyErr) {
-        alert(copyErr.message);
-        return;
-      }
-
-      await supabase.storage.from('notes').remove([oldPath]);
-      loadFiles(subject);
-    };
-
-    // DELETE
-    const delBtn = document.createElement('button');
-    delBtn.textContent = "Delete";
-    delBtn.className = "delete";
-
-    delBtn.onclick = async () => {
-      if (!confirm(`Delete "${file.name}"?`)) return;
-      await supabase.storage
-        .from('notes')
-        .remove([`chemistry_cycle/${subject}/${file.name}`]);
-      row.remove();
-    };
-
-    row.append(name, editBtn, delBtn);
-    filesBox.appendChild(row);
-  });
-}
-
-document.getElementById('load').onclick = () => {
-  const subject = document.getElementById('manageSubject').value;
-  loadFiles(subject);
-};
 </script>
 
 </body>
