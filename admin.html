@@ -16,6 +16,7 @@ header {
   background: linear-gradient(90deg, #b91c1c, #dc2626);
   color: white;
   padding: 1rem;
+  font-weight: 600;
 }
 
 main {
@@ -28,63 +29,103 @@ main {
   background: white;
   padding: 1.5rem;
   border-radius: 12px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.08);
   margin-bottom: 2rem;
+}
+
+label {
+  margin-top: 1rem;
+  display: block;
+  font-size: 0.9rem;
 }
 
 input, select {
   width: 100%;
   padding: 0.5rem;
-  margin-top: 0.5rem;
+  margin-top: 0.3rem;
+  border-radius: 8px;
+  border: 1px solid #d1d5db;
 }
 
 button {
   margin-top: 1rem;
   padding: 0.5rem 1rem;
-  border-radius: 8px;
+  border-radius: 999px;
   border: none;
-  color: white;
   background: #dc2626;
+  color: white;
   cursor: pointer;
 }
 
+.secondary { background: #6b7280; }
+.edit { background: #2563eb; }
+.delete { background: #ef4444; }
+
 .files {
   margin-top: 1rem;
+  max-height: 350px;
+  overflow-y: auto;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 0.5rem;
 }
 
 .row {
   display: grid;
   grid-template-columns: 1fr auto auto;
   gap: 0.5rem;
+  padding: 0.5rem;
+  border-bottom: 1px solid #e5e7eb;
+  align-items: center;
+}
+
+.row:last-child {
+  border-bottom: none;
+}
+
+.file-name {
+  font-size: 0.9rem;
+  word-break: break-word;
+}
+
+.status {
   margin-top: 0.5rem;
+  font-size: 0.85rem;
 }
 </style>
 </head>
 
 <body>
 
-<header>Chemistry Cycle – Admin</header>
+<header>Chemistry Cycle – Admin Panel</header>
 
 <main>
 
+<!-- UPLOAD -->
 <div class="card">
 <h2>Upload PDF</h2>
 
 <form id="uploadForm">
+<label>Subject</label>
 <select id="subject">
 <option>IPP</option><option>EEE</option><option>MAT</option>
 <option>CHY</option><option>EV</option><option>ESS</option>
 <option>BIO</option><option>ADLD</option><option>BE</option>
 </select>
 
-<input id="title" placeholder="Title">
-<input id="file" type="file">
+<label>Title</label>
+<input id="title" placeholder="Unit 1 Notes">
+
+<label>File</label>
+<input id="file" type="file" accept="application/pdf">
 
 <button type="submit">Upload</button>
 </form>
 
-<div id="status"></div>
+<div id="uploadStatus" class="status"></div>
 </div>
 
+<!-- MANAGE -->
 <div class="card">
 <h2>Manage Files</h2>
 
@@ -94,9 +135,9 @@ button {
 <option>BIO</option><option>ADLD</option><option>BE</option>
 </select>
 
-<button id="load">Load Files</button>
+<button id="load" class="secondary">Load Files</button>
 
-<div id="files" class="files"></div>
+<div id="files" class="files">No files loaded.</div>
 </div>
 
 </main>
@@ -104,39 +145,70 @@ button {
 <script type="module">
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
 
-/* BASIC PASSWORD */
+/* BASIC PROTECTION */
 const ADMIN_PASSWORD = "1234";
-if (prompt("Enter password") !== ADMIN_PASSWORD) throw new Error("Blocked");
+if (prompt("Enter admin password") !== ADMIN_PASSWORD) {
+  alert("Access denied");
+  throw new Error("Blocked");
+}
 
+/* SUPABASE INIT */
 const supabase = createClient(
   'https://brvbbxbfcrcpgkxxfuhv.supabase.co',
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJydmJieGJmY3JjcGdreHhmdWh2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQ1NzM1MzIsImV4cCI6MjA4MDE0OTUzMn0.Z8FYzhVSn0eMgQAWcXg9ul70AeSyWMid4dFtrhAZalQ'
 );
 
+const uploadForm = document.getElementById('uploadForm');
+const uploadStatus = document.getElementById('uploadStatus');
 const filesBox = document.getElementById('files');
 
-/* UPLOAD */
+/* ===== UPLOAD ===== */
 uploadForm.addEventListener('submit', async (e) => {
   e.preventDefault();
 
   const subject = document.getElementById('subject').value;
-  const title = document.getElementById('title').value;
+  const title = document.getElementById('title').value.trim();
   const file = document.getElementById('file').files[0];
 
-  const path = `chemistry_cycle/${subject}/${title}.pdf`;
+  if (!subject || !title || !file) {
+    uploadStatus.textContent = "All fields required";
+    uploadStatus.style.color = "red";
+    return;
+  }
+
+  const safeTitle = title.replace(/[^a-zA-Z0-9 _-]/g, '');
+  const path = `chemistry_cycle/${subject}/${safeTitle}.pdf`;
+
+  uploadStatus.textContent = "Uploading...";
 
   const { error } = await supabase.storage
     .from('notes')
     .upload(path, file, { upsert: true });
 
-  status.textContent = error ? error.message : "Uploaded successfully";
+  if (error) {
+    uploadStatus.textContent = error.message;
+    uploadStatus.style.color = "red";
+    return;
+  }
+
+  uploadStatus.textContent = "Upload successful!";
+  uploadStatus.style.color = "green";
+
+  uploadForm.reset();
 });
 
-/* LOAD FILES */
+/* ===== LOAD FILES ===== */
 async function loadFiles(subject) {
-  const { data } = await supabase.storage
+  filesBox.textContent = "Loading...";
+
+  const { data, error } = await supabase.storage
     .from('notes')
     .list(`chemistry_cycle/${subject}`);
+
+  if (error || !data || data.length === 0) {
+    filesBox.textContent = "No files found.";
+    return;
+  }
 
   filesBox.innerHTML = "";
 
@@ -144,43 +216,62 @@ async function loadFiles(subject) {
     const row = document.createElement('div');
     row.className = "row";
 
-    row.innerHTML = `
-      <span>${file.name}</span>
-      <button onclick="editFile('${subject}','${file.name}')">Edit</button>
-      <button onclick="deleteFile('${subject}','${file.name}')">Delete</button>
-    `;
+    const name = document.createElement('span');
+    name.className = "file-name";
+    name.textContent = file.name.replace('.pdf','');
 
+    /* EDIT */
+    const editBtn = document.createElement('button');
+    editBtn.textContent = "Edit";
+    editBtn.className = "edit";
+
+    editBtn.onclick = async () => {
+      const newTitle = prompt("Enter new name", name.textContent);
+      if (!newTitle) return;
+
+      const safe = newTitle.replace(/[^a-zA-Z0-9 _-]/g, '');
+
+      const oldPath = `chemistry_cycle/${subject}/${file.name}`;
+      const newPath = `chemistry_cycle/${subject}/${safe}.pdf`;
+
+      const { error: copyErr } = await supabase.storage
+        .from('notes')
+        .copy(oldPath, newPath);
+
+      if (copyErr) {
+        alert(copyErr.message);
+        return;
+      }
+
+      await supabase.storage.from('notes').remove([oldPath]);
+
+      loadFiles(subject);
+    };
+
+    /* DELETE */
+    const delBtn = document.createElement('button');
+    delBtn.textContent = "Delete";
+    delBtn.className = "delete";
+
+    delBtn.onclick = async () => {
+      if (!confirm(`Delete ${file.name}?`)) return;
+
+      await supabase.storage
+        .from('notes')
+        .remove([`chemistry_cycle/${subject}/${file.name}`]);
+
+      row.remove();
+    };
+
+    row.append(name, editBtn, delBtn);
     filesBox.appendChild(row);
   });
 }
 
-/* DELETE */
-window.deleteFile = async (subject, name) => {
-  await supabase.storage
-    .from('notes')
-    .remove([`chemistry_cycle/${subject}/${name}`]);
-
-  loadFiles(subject);
-};
-
-/* EDIT */
-window.editFile = async (subject, name) => {
-  const newName = prompt("New name");
-  if (!newName) return;
-
-  await supabase.storage.from('notes').copy(
-    `chemistry_cycle/${subject}/${name}`,
-    `chemistry_cycle/${subject}/${newName}.pdf`
-  );
-
-  await supabase.storage.from('notes')
-    .remove([`chemistry_cycle/${subject}/${name}`]);
-
-  loadFiles(subject);
-};
-
+/* BUTTON */
 document.getElementById('load').onclick = () => {
-  loadFiles(document.getElementById('manageSubject').value);
+  const subject = document.getElementById('manageSubject').value;
+  loadFiles(subject);
 };
 </script>
 
