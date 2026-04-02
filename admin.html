@@ -6,93 +6,146 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
 <style>
-body { margin:0; font-family:system-ui; background:#f8fafc; }
-header { background:#dc2626; color:white; padding:1rem; }
-main { max-width:900px; margin:2rem auto; padding:1rem; }
+  body {
+    margin: 0;
+    font-family: system-ui, sans-serif;
+    background: #f8fafc;
+  }
 
-.card {
-  background:white;
-  padding:1.5rem;
-  border-radius:12px;
-  margin-bottom:2rem;
-}
+  header {
+    background: linear-gradient(90deg, #b91c1c, #dc2626);
+    color: white;
+    padding: 1rem;
+  }
 
-input, select {
-  width:100%;
-  padding:0.5rem;
-  margin-top:0.5rem;
-}
+  header div {
+    max-width: 1000px;
+    margin: auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
 
-button {
-  margin-top:1rem;
-  padding:0.5rem 1rem;
-  border:none;
-  border-radius:8px;
-  color:white;
-  background:#dc2626;
-  cursor:pointer;
-}
+  main {
+    max-width: 900px;
+    margin: 2rem auto;
+    padding: 1rem;
+  }
 
-.secondary { background:#6b7280; }
-.edit { background:#2563eb; }
-.delete { background:#ef4444; }
+  .card {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 12px;
+    box-shadow: 0 12px 30px rgba(0,0,0,0.08);
+    margin-bottom: 2rem;
+  }
 
-.files {
-  margin-top:1rem;
-  background:#f9fafb;
-  padding:1rem;
-  border-radius:8px;
-  max-height:300px;
-  overflow:auto;
-}
+  label {
+    display: block;
+    margin-top: 1rem;
+    font-size: 0.9rem;
+  }
 
-.row {
-  display:grid;
-  grid-template-columns:1fr auto auto;
-  gap:0.5rem;
-  padding:0.4rem 0;
-  border-bottom:1px solid #e5e7eb;
-}
+  input, select {
+    width: 100%;
+    padding: 0.45rem;
+    border-radius: 8px;
+    border: 1px solid #d1d5db;
+    margin-top: 0.3rem;
+  }
+
+  button {
+    margin-top: 1rem;
+    padding: 0.45rem 1rem;
+    border-radius: 999px;
+    border: none;
+    cursor: pointer;
+    font-size: 0.85rem;
+    color: white;
+    background: #dc2626;
+  }
+
+  button.secondary { background: #6b7280; }
+  button.edit { background: #2563eb; }
+  button.delete { background: #ef4444; }
+
+  .status {
+    margin-top: 0.6rem;
+    font-size: 0.85rem;
+  }
+
+  .files {
+    margin-top: 1rem;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 0.75rem;
+    background: #f9fafb;
+    max-height: 300px;
+    overflow-y: auto;
+  }
+
+  .row {
+    display: grid;
+    grid-template-columns: 1fr auto auto;
+    gap: 0.4rem;
+    align-items: center;
+    padding: 0.4rem 0;
+    border-bottom: 1px solid #e5e7eb;
+    font-size: 0.85rem;
+  }
+
+  .row:last-child {
+    border-bottom: none;
+  }
 </style>
 </head>
 
 <body>
 
-<header><strong>Chemistry Cycle – Admin</strong></header>
+<header>
+  <div>
+    <strong>Chemistry Cycle – Admin</strong>
+    <span>Upload • Edit • Delete</span>
+  </div>
+</header>
 
 <main>
 
 <div class="card">
-<h2>Upload PDF</h2>
+  <h2>Upload PDF</h2>
 
-<form id="uploadForm">
-<select id="subject">
-<option>IPP</option><option>EEE</option><option>MAT</option>
-<option>CHY</option><option>EV</option><option>ESS</option>
-<option>BIO</option><option>ADLD</option><option>BE</option>
-</select>
+  <form id="uploadForm">
+    <label>Subject</label>
+    <select id="subject">
+      <option>IPP</option><option>EEE</option><option>MAT</option>
+      <option>CHY</option><option>EV</option><option>ESS</option>
+      <option>BIO</option><option>ADLD</option><option>BE</option>
+    </select>
 
-<input id="title" placeholder="Title">
-<input id="file" type="file" accept="application/pdf">
+    <label>Title</label>
+    <input id="title">
 
-<button type="submit">Upload</button>
-</form>
+    <label>PDF</label>
+    <input id="file" type="file">
 
-<div id="uploadStatus"></div>
+    <button type="submit">Upload</button>
+  </form>
+
+  <div id="uploadStatus" class="status"></div>
 </div>
 
 <div class="card">
-<h2>Manage Files</h2>
+  <h2>Manage Files</h2>
 
-<select id="manageSubject">
-<option>IPP</option><option>EEE</option><option>MAT</option>
-<option>CHY</option><option>EV</option><option>ESS</option>
-<option>BIO</option><option>ADLD</option><option>BE</option>
-</select>
+  <select id="manageSubject">
+    <option>IPP</option><option>EEE</option><option>MAT</option>
+    <option>CHY</option><option>EV</option><option>ESS</option>
+    <option>BIO</option><option>ADLD</option><option>BE</option>
+  </select>
 
-<button id="load" class="secondary">Load Files</button>
+  <button id="load" class="secondary">Load Files</button>
 
-<div id="files" class="files">No files loaded.</div>
+  <div id="files" class="files">No files loaded.</div>
 </div>
 
 </main>
@@ -100,10 +153,8 @@ button {
 <script type="module">
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
 
-/* 🔐 BASIC ADMIN PROTECTION */
-const ADMIN_PASSWORD = "your-secret";
-const input = prompt("Enter admin password");
-if (input !== ADMIN_PASSWORD) {
+const ADMIN_PASSWORD = "1234";
+if (prompt("Password") !== ADMIN_PASSWORD) {
   alert("Access denied");
   throw new Error("Blocked");
 }
@@ -117,7 +168,6 @@ const uploadForm = document.getElementById('uploadForm');
 const uploadStatus = document.getElementById('uploadStatus');
 const filesBox = document.getElementById('files');
 
-/* ===== UPLOAD ===== */
 uploadForm.addEventListener('submit', async (e) => {
   e.preventDefault();
 
@@ -125,49 +175,26 @@ uploadForm.addEventListener('submit', async (e) => {
   const title = document.getElementById('title').value.trim();
   const file = document.getElementById('file').files[0];
 
-  if (!subject || !title || !file) {
-    uploadStatus.textContent = "All fields required";
-    return;
-  }
-
-  if (file.size > 5 * 1024 * 1024) {
-    uploadStatus.textContent = "Max 5MB allowed";
-    return;
-  }
-
-  const safeTitle = title.replace(/[^a-zA-Z0-9 _-]/g, '');
-  const path = `chemistry_cycle/${subject}/${safeTitle}.pdf`;
+  const path = `${subject}/${title}.pdf`;
 
   uploadStatus.textContent = "Uploading...";
 
   const { error } = await supabase.storage
     .from('notes')
-    .upload(path, file, {
-      upsert: true,
-      cacheControl: "3600"
-    });
+    .upload(path, file, { upsert: true });
 
-  if (error) {
-    uploadStatus.textContent = error.message;
-    return;
-  }
+  if (error) return uploadStatus.textContent = error.message;
 
   uploadStatus.textContent = "Uploaded!";
   uploadForm.reset();
 });
 
-/* ===== LOAD FILES ===== */
 async function loadFiles(subject) {
   filesBox.textContent = "Loading...";
 
-  const { data, error } = await supabase.storage
+  const { data } = await supabase.storage
     .from('notes')
-    .list(`chemistry_cycle/${subject}`);
-
-  if (error || !data.length) {
-    filesBox.textContent = "No files";
-    return;
-  }
+    .list(subject);
 
   filesBox.innerHTML = "";
 
@@ -175,42 +202,30 @@ async function loadFiles(subject) {
     const row = document.createElement('div');
     row.className = "row";
 
-    const name = document.createElement('span');
-    name.textContent = file.name.replace('.pdf','');
+    row.innerHTML = `
+      <span>${file.name}</span>
+      <button class="edit">Edit</button>
+      <button class="delete">Delete</button>
+    `;
 
-    const editBtn = document.createElement('button');
-    editBtn.textContent = "Edit";
-    editBtn.className = "edit";
-
-    editBtn.onclick = async () => {
-      const newTitle = prompt("New title", name.textContent);
-      if (!newTitle) return;
-
-      const safe = newTitle.replace(/[^a-zA-Z0-9 _-]/g, '');
-      const oldPath = `chemistry_cycle/${subject}/${file.name}`;
-      const newPath = `chemistry_cycle/${subject}/${safe}.pdf`;
-
-      await supabase.storage.from('notes').copy(oldPath, newPath);
-      await supabase.storage.from('notes').remove([oldPath]);
-
-      loadFiles(subject);
-    };
-
-    const delBtn = document.createElement('button');
-    delBtn.textContent = "Delete";
-    delBtn.className = "delete";
-
-    delBtn.onclick = async () => {
-      if (!confirm("Delete file?")) return;
-
-      await supabase.storage
-        .from('notes')
-        .remove([`chemistry_cycle/${subject}/${file.name}`]);
-
+    row.querySelector('.delete').onclick = async () => {
+      await supabase.storage.from('notes').remove([`${subject}/${file.name}`]);
       row.remove();
     };
 
-    row.append(name, editBtn, delBtn);
+    row.querySelector('.edit').onclick = async () => {
+      const newName = prompt("New name");
+      if (!newName) return;
+
+      await supabase.storage.from('notes').copy(
+        `${subject}/${file.name}`,
+        `${subject}/${newName}.pdf`
+      );
+
+      await supabase.storage.from('notes').remove([`${subject}/${file.name}`]);
+      loadFiles(subject);
+    };
+
     filesBox.appendChild(row);
   });
 }
