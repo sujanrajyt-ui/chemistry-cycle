@@ -6,63 +6,53 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
 <style>
-  body { margin:0; font-family:system-ui; background:#f8fafc; }
+body { margin:0; font-family:system-ui; background:#f8fafc; }
+header { background:#dc2626; color:white; padding:1rem; }
+main { max-width:900px; margin:2rem auto; padding:1rem; }
 
-  header {
-    background:#dc2626;
-    color:white;
-    padding:1rem;
-  }
+.card {
+  background:white;
+  padding:1.5rem;
+  border-radius:12px;
+  margin-bottom:2rem;
+}
 
-  main {
-    max-width:900px;
-    margin:2rem auto;
-    padding:1rem;
-  }
+input, select {
+  width:100%;
+  padding:0.5rem;
+  margin-top:0.5rem;
+}
 
-  .card {
-    background:white;
-    padding:1.5rem;
-    border-radius:12px;
-    margin-bottom:2rem;
-  }
+button {
+  margin-top:1rem;
+  padding:0.5rem 1rem;
+  border:none;
+  border-radius:8px;
+  color:white;
+  background:#dc2626;
+  cursor:pointer;
+}
 
-  input, select {
-    width:100%;
-    padding:0.5rem;
-    margin-top:0.5rem;
-  }
+.secondary { background:#6b7280; }
+.edit { background:#2563eb; }
+.delete { background:#ef4444; }
 
-  button {
-    margin-top:1rem;
-    padding:0.5rem 1rem;
-    border:none;
-    border-radius:8px;
-    color:white;
-    background:#dc2626;
-    cursor:pointer;
-  }
+.files {
+  margin-top:1rem;
+  background:#f9fafb;
+  padding:1rem;
+  border-radius:8px;
+  max-height:300px;
+  overflow:auto;
+}
 
-  .secondary { background:#6b7280; }
-  .edit { background:#2563eb; }
-  .delete { background:#ef4444; }
-
-  .files {
-    margin-top:1rem;
-    background:#f9fafb;
-    padding:1rem;
-    border-radius:8px;
-    max-height:300px;
-    overflow:auto;
-  }
-
-  .row {
-    display:grid;
-    grid-template-columns:1fr auto auto;
-    gap:0.5rem;
-    padding:0.4rem 0;
-    border-bottom:1px solid #e5e7eb;
-  }
+.row {
+  display:grid;
+  grid-template-columns:1fr auto auto;
+  gap:0.5rem;
+  padding:0.4rem 0;
+  border-bottom:1px solid #e5e7eb;
+}
 </style>
 </head>
 
@@ -72,7 +62,6 @@
 
 <main>
 
-<!-- UPLOAD -->
 <div class="card">
 <h2>Upload PDF</h2>
 
@@ -92,7 +81,6 @@
 <div id="uploadStatus"></div>
 </div>
 
-<!-- MANAGE -->
 <div class="card">
 <h2>Manage Files</h2>
 
@@ -112,6 +100,14 @@
 <script type="module">
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
 
+/* 🔐 BASIC ADMIN PROTECTION */
+const ADMIN_PASSWORD = "your-secret";
+const input = prompt("Enter admin password");
+if (input !== ADMIN_PASSWORD) {
+  alert("Access denied");
+  throw new Error("Blocked");
+}
+
 const supabase = createClient(
   'https://brvbbxbfcrcpgkxxfuhv.supabase.co',
   'YOUR_ANON_KEY'
@@ -121,7 +117,7 @@ const uploadForm = document.getElementById('uploadForm');
 const uploadStatus = document.getElementById('uploadStatus');
 const filesBox = document.getElementById('files');
 
-// ===== UPLOAD =====
+/* ===== UPLOAD ===== */
 uploadForm.addEventListener('submit', async (e) => {
   e.preventDefault();
 
@@ -160,7 +156,7 @@ uploadForm.addEventListener('submit', async (e) => {
   uploadForm.reset();
 });
 
-// ===== LOAD FILES =====
+/* ===== LOAD FILES ===== */
 async function loadFiles(subject) {
   filesBox.textContent = "Loading...";
 
@@ -182,7 +178,6 @@ async function loadFiles(subject) {
     const name = document.createElement('span');
     name.textContent = file.name.replace('.pdf','');
 
-    // EDIT
     const editBtn = document.createElement('button');
     editBtn.textContent = "Edit";
     editBtn.className = "edit";
@@ -201,7 +196,6 @@ async function loadFiles(subject) {
       loadFiles(subject);
     };
 
-    // DELETE
     const delBtn = document.createElement('button');
     delBtn.textContent = "Delete";
     delBtn.className = "delete";
@@ -222,8 +216,7 @@ async function loadFiles(subject) {
 }
 
 document.getElementById('load').onclick = () => {
-  const subject = document.getElementById('manageSubject').value;
-  loadFiles(subject);
+  loadFiles(document.getElementById('manageSubject').value);
 };
 </script>
 
