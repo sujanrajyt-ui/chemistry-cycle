@@ -13,6 +13,7 @@
       gap: 0.75rem;
       margin-top: 1.5rem;
     }
+
     .files-box {
       margin-top: 1.5rem;
       background: #ffffff;
@@ -20,25 +21,35 @@
       padding: 1rem;
       box-shadow: 0 8px 20px rgba(0,0,0,0.06);
     }
+
     .file-item {
       padding: 0.4rem 0;
       border-bottom: 1px solid #e5e7eb;
       font-size: 0.9rem;
     }
+
     .file-item:last-child {
       border-bottom: none;
     }
+
     .file-item a {
       color: #dc2626;
       text-decoration: none;
     }
+
     .file-item a:hover {
       text-decoration: underline;
+    }
+
+    .clear-btn {
+      margin-top: 10px;
+      background: #6b7280;
     }
   </style>
 </head>
 
 <body>
+
 <header class="site-header">
   <div class="header-inner">
     <div class="logo">Chemistry Cycle</div>
@@ -62,59 +73,108 @@
       <button class="btn" data-subject="BE">BE</button>
     </div>
 
+    <!-- CLEAR CACHE BUTTON -->
+    <button onclick="clearCache()" class="btn clear-btn">
+      Clear Cache
+    </button>
+
     <div id="filesBox" class="files-box" style="display:none;"></div>
   </section>
 </main>
 
 <footer class="site-footer">
-  <p>&copy; 2025 Chemistry Cycle • By Sujanraj. All rights reserved.</p>
+  <p>&copy; 2025 Chemistry Cycle • By Sujanraj</p>
 </footer>
 
 <script type="module">
-  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
 
-  const SUPABASE_URL = 'https://brvbbxbfcrcpgkxxfuhv.supabase.co';
-  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJydmJieGJmY3JjcGdreHhmdWh2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQ1NzM1MzIsImV4cCI6MjA4MDE0OTUzMn0.Z8FYzhVSn0eMgQAWcXg9ul70AeSyWMid4dFtrhAZalQ';
+const SUPABASE_URL = 'https://brvbbxbfcrcpgkxxfuhv.supabase.co';
+const SUPABASE_ANON_KEY = 'YOUR_ANON_KEY';
 
-  const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-  const filesBox = document.getElementById('filesBox');
+const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-  async function loadSubject(subject) {
-    filesBox.style.display = 'block';
-    filesBox.innerHTML = `<p>Loading ${subject} files...</p>`;
+const filesBox = document.getElementById('filesBox');
 
-    const folder = `chemistry_cycle/${subject}`;
+let cache = {};        // frontend cache
+let loading = false;   // prevents spam clicks
+
+// CLEAR CACHE
+window.clearCache = () => {
+  cache = {};
+  filesBox.innerHTML = "<p>Cache cleared.</p>";
+};
+
+// LOAD SUBJECT
+async function loadSubject(subject) {
+  if (loading) return;
+  loading = true;
+
+  // Use cache if available
+  if (cache[subject]) {
+    render(subject, cache[subject]);
+    loading = false;
+    return;
+  }
+
+  filesBox.style.display = 'block';
+  filesBox.innerHTML = `<p>Loading ${subject} files...</p>`;
+
+  const folder = `chemistry_cycle/${subject}`;
+
+  const { data, error } = await supabase
+    .storage
+    .from('notes')
+    .list(folder, {
+      sortBy: { column: 'name', order: 'asc' }
+    });
+
+  if (error || !data || data.length === 0) {
+    filesBox.innerHTML = `<p>No files found for ${subject}.</p>`;
+    loading = false;
+    return;
+  }
+
+  cache[subject] = data;
+  render(subject, data);
+
+  loading = false;
+}
+
+// RENDER FILES WITH SIGNED URL
+async function render(subject, files) {
+  filesBox.innerHTML = `<h3>${subject} Notes</h3>`;
+
+  for (const file of files) {
+    const path = `chemistry_cycle/${subject}/${file.name}`;
 
     const { data, error } = await supabase
       .storage
       .from('notes')
-      .list(folder, { sortBy: { column: 'name', order: 'asc' } });
+      .createSignedUrl(path, 60); // 60 sec expiry
 
-    if (error || !data || data.length === 0) {
-      filesBox.innerHTML = `<p>No files found for ${subject}.</p>`;
-      return;
-    }
+    if (error) continue;
 
-    filesBox.innerHTML = `<h3>${subject} Notes</h3>`;
+    const div = document.createElement('div');
+    div.className = 'file-item';
 
-    data.forEach(file => {
-      const { data: urlData } = supabase
-        .storage
-        .from('notes')
-        .getPublicUrl(`${folder}/${file.name}`);
+    div.innerHTML = `
+      <a href="${data.signedUrl}" target="_blank">
+        ${file.name.replace('.pdf','')}
+      </a>
+    `;
 
-      const div = document.createElement('div');
-      div.className = 'file-item';
-      div.innerHTML = `<a href="${urlData.publicUrl}" target="_blank">${file.name}</a>`;
-      filesBox.appendChild(div);
-    });
+    filesBox.appendChild(div);
   }
+}
 
-  document.querySelectorAll('[data-subject]').forEach(btn => {
-    btn.addEventListener('click', () => {
-      loadSubject(btn.dataset.subject);
-    });
+// BUTTON EVENTS
+document.querySelectorAll('[data-subject]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    loadSubject(btn.dataset.subject);
   });
+});
 </script>
+
 </body>
 </html>
