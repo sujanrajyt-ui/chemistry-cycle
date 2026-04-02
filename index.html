@@ -5,9 +5,7 @@
 <title>Chemistry Cycle</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
-<!-- ✅ FIX favicon 404 -->
 <link rel="icon" href="data:,">
-
 <link rel="stylesheet" href="style.css">
 </head>
 
@@ -51,7 +49,6 @@
 <script type="module">
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
 
-/* ✅ SUPABASE INIT */
 const supabase = createClient(
   'https://brvbbxbfcrcpgkxxfuhv.supabase.co',
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJydmJieGJmY3JjcGdreHhmdWh2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQ1NzM1MzIsImV4cCI6MjA4MDE0OTUzMn0.Z8FYzhVSn0eMgQAWcXg9ul70AeSyWMid4dFtrhAZalQ'
@@ -62,13 +59,11 @@ const filesBox = document.getElementById('filesBox');
 let cache = {};
 let loading = false;
 
-/* CLEAR CACHE */
 window.clearCache = () => {
   cache = {};
   filesBox.innerHTML = "<p>Cache cleared</p>";
 };
 
-/* LOAD SUBJECT */
 async function loadSubject(subject) {
   if (loading) return;
   loading = true;
@@ -84,9 +79,8 @@ async function loadSubject(subject) {
 
   const { data, error } = await supabase.storage
     .from('notes')
-    .list(subject);
+    .list(`chemistry_cycle/${subject}`);
 
-  /* ✅ SAFE CHECK (prevents crash) */
   if (error || !data || data.length === 0) {
     filesBox.innerHTML = `<p>No files found for ${subject}</p>`;
     loading = false;
@@ -99,12 +93,11 @@ async function loadSubject(subject) {
   loading = false;
 }
 
-/* RENDER FILES */
 async function render(subject, files) {
   filesBox.innerHTML = `<h3>${subject} Notes</h3>`;
 
   for (const file of files) {
-    const path = `${subject}/${file.name}`;
+    const path = `chemistry_cycle/${subject}/${file.name}`;
 
     const { data, error } = await supabase.storage
       .from('notes')
@@ -125,7 +118,6 @@ async function render(subject, files) {
   }
 }
 
-/* BUTTON EVENTS */
 document.querySelectorAll('[data-subject]').forEach(btn => {
   btn.onclick = () => loadSubject(btn.dataset.subject);
 });
