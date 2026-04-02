@@ -73,7 +73,7 @@
       <button class="btn" data-subject="BE">BE</button>
     </div>
 
-    <!-- CLEAR CACHE BUTTON -->
+    <!-- CLEAR CACHE -->
     <button onclick="clearCache()" class="btn clear-btn">
       Clear Cache
     </button>
@@ -83,34 +83,47 @@
 </main>
 
 <footer class="site-footer">
-  <p>&copy; 2025 Chemistry Cycle • By Sujanraj</p>
+  <p>&copy; 2025 Chemistry Cycle</p>
 </footer>
 
 <script type="module">
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
 
-const SUPABASE_URL = 'https://brvbbxbfcrcpgkxxfuhv.supabase.co';
-const SUPABASE_ANON_KEY = 'YOUR_ANON_KEY';
-
-const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+/* ✅ MAKE SUPABASE GLOBAL (FIXES YOUR ERROR) */
+window.supabase = createClient(
+  'https://brvbbxbfcrcpgkxxfuhv.supabase.co',
+  'YOUR_ANON_KEY'
+);
 
 const filesBox = document.getElementById('filesBox');
 
-let cache = {};        // frontend cache
-let loading = false;   // prevents spam clicks
+let cache = {};
+let loading = false;
 
-// CLEAR CACHE
+/* CLEAR CACHE */
 window.clearCache = () => {
   cache = {};
   filesBox.innerHTML = "<p>Cache cleared.</p>";
 };
 
-// LOAD SUBJECT
+/* AUTO-DETECT FOLDER STRUCTURE */
+async function detectFolder(subject) {
+  // Try chemistry_cycle first
+  let test = await supabase.storage.from('notes').list(`chemistry_cycle/${subject}`);
+
+  if (test.data && test.data.length > 0) {
+    return `chemistry_cycle/${subject}`;
+  }
+
+  // fallback
+  return subject;
+}
+
+/* LOAD SUBJECT */
 async function loadSubject(subject) {
   if (loading) return;
   loading = true;
 
-  // Use cache if available
   if (cache[subject]) {
     render(subject, cache[subject]);
     loading = false;
@@ -120,10 +133,9 @@ async function loadSubject(subject) {
   filesBox.style.display = 'block';
   filesBox.innerHTML = `<p>Loading ${subject} files...</p>`;
 
-  const folder = `chemistry_cycle/${subject}`;
+  const folder = await detectFolder(subject);
 
-  const { data, error } = await supabase
-    .storage
+  const { data, error } = await supabase.storage
     .from('notes')
     .list(folder, {
       sortBy: { column: 'name', order: 'asc' }
@@ -141,19 +153,20 @@ async function loadSubject(subject) {
   loading = false;
 }
 
-// RENDER FILES WITH SIGNED URL
+/* RENDER FILES */
 async function render(subject, files) {
   filesBox.innerHTML = `<h3>${subject} Notes</h3>`;
 
+  const folder = await detectFolder(subject);
+
   for (const file of files) {
-    const path = `chemistry_cycle/${subject}/${file.name}`;
+    const path = `${folder}/${file.name}`;
 
-    const { data, error } = await supabase
-      .storage
+    const { data } = await supabase.storage
       .from('notes')
-      .createSignedUrl(path, 60); // 60 sec expiry
+      .createSignedUrl(path, 60);
 
-    if (error) continue;
+    if (!data) continue;
 
     const div = document.createElement('div');
     div.className = 'file-item';
@@ -168,7 +181,7 @@ async function render(subject, files) {
   }
 }
 
-// BUTTON EVENTS
+/* BUTTON EVENTS */
 document.querySelectorAll('[data-subject]').forEach(btn => {
   btn.addEventListener('click', () => {
     loadSubject(btn.dataset.subject);
