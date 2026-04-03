@@ -47,33 +47,54 @@ import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js
 
 const supabase = createClient(
   'https://brvbbxbfcrcpgkxxfuhv.supabase.co',
-  'YOUR_KEY'
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJydmJieGJmY3JjcGdreHhmdWh2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQ1NzM1MzIsImV4cCI6MjA4MDE0OTUzMn0.Z8FYzhVSn0eMgQAWcXg9ul70AeSyWMid4dFtrhAZalQ' // keep your full key
 );
 
 const filesBox = document.getElementById('filesBox');
 
-/* LOAD NOTES */
+/* LOAD NOTES (UNCHANGED + FIXED) */
 async function loadSubject(subject) {
-  filesBox.style.display = 'block';
-  filesBox.innerHTML = `<p>Loading ${subject}...</p>`;
 
-  const { data } = await supabase.storage
+  filesBox.style.display = 'block';
+  filesBox.innerHTML = `<p>Loading ${subject} files...</p>`;
+
+  const folder = `chemistry_cycle/${subject}`;
+
+  const { data, error } = await supabase.storage
     .from('notes')
-    .list(`chemistry_cycle/${subject}`);
+    .list(folder, { sortBy: { column: 'name', order: 'asc' } });
+
+  if (error || !data || data.length === 0) {
+    filesBox.innerHTML = `<p>No files found for ${subject}.</p>`;
+    return;
+  }
 
   filesBox.innerHTML = `<h3>${subject} Notes</h3>`;
 
-  data.forEach(file => {
+  for (const file of data) {
+    const path = `chemistry_cycle/${subject}/${file.name}`;
+
+    const { data: urlData } = await supabase
+      .storage
+      .from('notes')
+      .createSignedUrl(path, 60);
+
     const div = document.createElement('div');
     div.className = 'file-item';
-    div.innerHTML = `<a href="#">${file.name}</a>`;
+
+    div.innerHTML = `
+      <a href="${urlData.signedUrl}" target="_blank">
+        ${file.name.replace('.pdf','')}
+      </a>
+    `;
+
     filesBox.appendChild(div);
-  });
+  }
 }
 
 /* BUTTON LOGIC */
 document.querySelectorAll('[data-subject]').forEach(btn => {
-  btn.onclick = () => {
+  btn.addEventListener('click', () => {
     const subject = btn.dataset.subject;
 
     if (subject === "ESS" || subject === "BIO") {
@@ -81,11 +102,12 @@ document.querySelectorAll('[data-subject]').forEach(btn => {
     } else {
       loadSubject(subject);
     }
-  };
+  });
 });
 </script>
 
-<script src="question-bank.js"></script>
+<script src="bio-questions.js"></script>
+<script src="ess-questions.js"></script>
 <script src="quiz-engine.js"></script>
 
 </body>
