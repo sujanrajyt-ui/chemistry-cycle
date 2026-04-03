@@ -1,0 +1,194 @@
+<div id="quiz-root">
+
+<!-- LANDING -->
+<div id="screen-landing">
+  <h2>ESS Quiz</h2>
+  <input id="player-name" placeholder="Enter your name" />
+  <div id="name-err" style="color:red;"></div>
+  <button id="btn-start">Start Quiz</button>
+</div>
+
+<!-- QUIZ -->
+<div id="screen-quiz" style="display:none;">
+  <div id="prog-label"></div>
+  <div id="prog-fill" style="height:5px;background:#22c55e;width:0;"></div>
+
+  <div id="q-counter"></div>
+
+  <h3 id="q-text"></h3>
+  <div id="options-grid"></div>
+
+  <div id="q-answered"></div>
+
+  <button id="btn-next" disabled>Next</button>
+</div>
+
+<!-- RESULT -->
+<div id="screen-result" style="display:none;">
+  <h2>Result</h2>
+  <p id="r-score"></p>
+  <p id="r-total"></p>
+  <p id="r-pct"></p>
+  <p id="r-msg"></p>
+  <p>Correct: <span id="r-correct"></span></p>
+  <p>Wrong: <span id="r-wrong"></span></p>
+
+  <button id="btn-retake">Retry</button>
+</div>
+
+</div>
+
+<script>
+
+/* ================== SHUFFLE ================== */
+function shuffle(arr){
+  return arr.map(v=>({v,r:Math.random()}))
+            .sort((a,b)=>a.r-b.r)
+            .map(x=>x.v);
+}
+
+/* ================== PREPARE ================== */
+function prepareQuestions(raw){
+  return shuffle(raw).map(q=>{
+    const correct = q.opts[q.a];
+    const shuffled = shuffle(q.opts);
+
+    return {
+      ...q,
+      opts: shuffled,
+      answer: correct
+    };
+  });
+}
+
+/* ================== USE YOUR ORIGINAL DATA ================== */
+/* IMPORTANT: this uses YOUR existing ALL_QUESTIONS from your file */
+const QUESTIONS = prepareQuestions(ALL_QUESTIONS);
+
+/* ================== STATE ================== */
+let currentQ = 0;
+let correct = 0;
+let wrong = 0;
+
+/* ================== START ================== */
+document.getElementById("btn-start").onclick = () => {
+  const name = document.getElementById("player-name").value.trim();
+
+  if(!name){
+    document.getElementById("name-err").innerText = "Enter your name";
+    return;
+  }
+
+  document.getElementById("screen-landing").style.display = "none";
+  document.getElementById("screen-quiz").style.display = "block";
+
+  loadQuestion();
+};
+
+/* ================== LOAD QUESTION ================== */
+function loadQuestion(){
+  const q = QUESTIONS[currentQ];
+
+  document.getElementById("q-text").innerText = q.q;
+  document.getElementById("options-grid").innerHTML = "";
+  document.getElementById("btn-next").disabled = true;
+  document.getElementById("q-answered").innerHTML = "";
+
+  document.getElementById("prog-label").innerText =
+    `Question ${currentQ + 1} of ${QUESTIONS.length}`;
+
+  document.getElementById("prog-fill").style.width =
+    ((currentQ + 1) / QUESTIONS.length) * 100 + "%";
+
+  document.getElementById("q-counter").innerHTML =
+    `✓ ${correct} &nbsp; ✗ ${wrong}`;
+
+  q.opts.forEach((opt, i)=>{
+    const btn = document.createElement("button");
+    btn.className = "opt-btn";
+
+    btn.innerHTML = `
+      <div class="opt-letter">${String.fromCharCode(65 + i)}</div>
+      ${opt}
+    `;
+
+    btn.onclick = ()=> checkAnswer(opt);
+
+    document.getElementById("options-grid").appendChild(btn);
+  });
+}
+
+/* ================== CHECK ANSWER ================== */
+function checkAnswer(selected){
+  const q = QUESTIONS[currentQ];
+  const buttons = document.querySelectorAll(".opt-btn");
+
+  buttons.forEach(btn=>{
+    btn.disabled = true;
+
+    const text = btn.innerText.slice(2).trim();
+
+    if(text === q.answer){
+      btn.classList.add("correct");
+    }
+
+    if(text === selected && text !== q.answer){
+      btn.classList.add("wrong");
+    }
+  });
+
+  if(selected === q.answer){
+    correct++;
+    document.getElementById("q-answered").innerHTML = "✅ Correct!";
+  } else {
+    wrong++;
+    document.getElementById("q-answered").innerHTML =
+      `❌ Wrong! Correct: <b>${q.answer}</b>`;
+  }
+
+  document.getElementById("q-counter").innerHTML =
+    `✓ ${correct} &nbsp; ✗ ${wrong}`;
+
+  document.getElementById("btn-next").disabled = false;
+}
+
+/* ================== NEXT ================== */
+document.getElementById("btn-next").onclick = ()=>{
+  currentQ++;
+
+  if(currentQ < QUESTIONS.length){
+    loadQuestion();
+  } else {
+    showResult();
+  }
+};
+
+/* ================== RESULT ================== */
+function showResult(){
+  document.getElementById("screen-quiz").style.display = "none";
+  document.getElementById("screen-result").style.display = "block";
+
+  document.getElementById("r-score").innerText = correct;
+  document.getElementById("r-total").innerText =
+    `out of ${QUESTIONS.length} correct`;
+
+  document.getElementById("r-correct").innerText = correct;
+  document.getElementById("r-wrong").innerText = wrong;
+
+  const pct = Math.round((correct / QUESTIONS.length) * 100);
+  document.getElementById("r-pct").innerText = pct + "%";
+
+  let msg = "Good try!";
+  if (pct > 80) msg = "🔥 Excellent!";
+  else if (pct > 60) msg = "👏 Well done!";
+  else if (pct > 40) msg = "👍 Not bad!";
+
+  document.getElementById("r-msg").innerText = msg;
+}
+
+/* ================== RETAKE ================== */
+document.getElementById("btn-retake").onclick = ()=>{
+  location.reload();
+};
+
+</script>
