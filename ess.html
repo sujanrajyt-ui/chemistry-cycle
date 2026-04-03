@@ -1,194 +1,995 @@
-<div id="quiz-root">
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Environmental Science – Mid-Semester Quiz</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Exo+2:wght@300;400;600;700&display=swap" rel="stylesheet"/>
+<style>
+  :root{
+    --bg:#080c1a;
+    --card:#0e1528;
+    --card2:#121b35;
+    --accent:#00f5d4;
+    --accent2:#f72585;
+    --accent3:#7b2ff7;
+    --gold:#ffd60a;
+    --text:#e8f0ff;
+    --muted:#7a8ab0;
+    --green:#06d6a0;
+    --red:#ef233c;
+    --radius:18px;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{
+    min-height:100vh;
+    background:var(--bg);
+    font-family:'Exo 2',sans-serif;
+    color:var(--text);
+    overflow-x:hidden;
+  }
 
-<!-- LANDING -->
-<div id="screen-landing">
-  <h2>ESS Quiz</h2>
-  <input id="player-name" placeholder="Enter your name" />
-  <div id="name-err" style="color:red;"></div>
-  <button id="btn-start">Start Quiz</button>
+  /* Starfield */
+  #stars{position:fixed;inset:0;z-index:0;pointer-events:none}
+  .star{position:absolute;border-radius:50%;background:#fff;animation:twinkle var(--d,3s) ease-in-out infinite}
+  @keyframes twinkle{0%,100%{opacity:.15;transform:scale(1)}50%{opacity:.9;transform:scale(1.4)}}
+
+  /* Blobs */
+  .blob{position:fixed;border-radius:50%;filter:blur(80px);opacity:.18;z-index:0;pointer-events:none;animation:drift 12s ease-in-out infinite alternate;}
+  .blob1{width:500px;height:500px;background:var(--accent3);top:-120px;left:-120px}
+  .blob2{width:400px;height:400px;background:var(--accent2);bottom:-100px;right:-80px;animation-delay:-4s}
+  .blob3{width:300px;height:300px;background:var(--accent);bottom:30%;left:60%;animation-delay:-8s}
+  @keyframes drift{from{transform:translate(0,0) scale(1)}to{transform:translate(40px,30px) scale(1.1)}}
+
+  /* Wrapper */
+  .app{position:relative;z-index:1;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px}
+
+  /* Landing */
+  #screen-landing{text-align:center;animation:fadeUp .8s ease forwards;}
+  .logo-badge{
+    display:inline-flex;align-items:center;gap:10px;
+    background:linear-gradient(135deg,rgba(0,245,212,.12),rgba(123,47,247,.12));
+    border:1px solid rgba(0,245,212,.3);
+    border-radius:50px;padding:8px 22px;font-size:.78rem;letter-spacing:2px;text-transform:uppercase;color:var(--accent);
+    margin-bottom:30px;
+  }
+  .logo-badge span{font-size:1.1rem}
+  h1.main-title{
+    font-family:'Orbitron',sans-serif;
+    font-size:clamp(2rem,6vw,4rem);font-weight:900;
+    background:linear-gradient(135deg,var(--accent),var(--accent3),var(--accent2));
+    -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+    line-height:1.1;margin-bottom:12px;
+  }
+  .subtitle{font-size:1rem;color:var(--muted);margin-bottom:48px;letter-spacing:1px}
+
+  .neon-box{
+    background:rgba(14,21,40,.85);border:1.5px solid rgba(0,245,212,.25);border-radius:var(--radius);
+    padding:40px 48px;max-width:480px;width:100%;
+    box-shadow:0 0 60px rgba(0,245,212,.07),0 20px 60px rgba(0,0,0,.5);
+    backdrop-filter:blur(12px);
+  }
+  .field-label{display:block;font-size:.75rem;letter-spacing:2px;text-transform:uppercase;color:var(--accent);margin-bottom:10px}
+  .name-input{
+    width:100%;padding:16px 20px;
+    background:rgba(255,255,255,.04);border:1.5px solid rgba(0,245,212,.2);border-radius:12px;
+    color:var(--text);font-family:'Exo 2',sans-serif;font-size:1.05rem;outline:none;transition:.3s;
+  }
+  .name-input:focus{border-color:var(--accent);box-shadow:0 0 20px rgba(0,245,212,.15)}
+  .name-input::placeholder{color:var(--muted)}
+
+  .btn-start{
+    margin-top:28px;width:100%;padding:18px;
+    font-family:'Orbitron',sans-serif;font-size:1rem;font-weight:700;letter-spacing:2px;
+    background:linear-gradient(135deg,var(--accent3),var(--accent2));
+    color:#fff;border:none;border-radius:14px;cursor:pointer;
+    position:relative;overflow:hidden;transition:transform .2s,box-shadow .2s;
+    box-shadow:0 8px 32px rgba(123,47,247,.4);
+  }
+  .btn-start::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,var(--accent),var(--accent3));opacity:0;transition:.3s;}
+  .btn-start:hover{transform:translateY(-3px);box-shadow:0 14px 40px rgba(0,245,212,.35)}
+  .btn-start:hover::before{opacity:1}
+  .btn-start span{position:relative;z-index:1}
+  .btn-start:active{transform:translateY(0)}
+
+  .quiz-meta{display:flex;gap:20px;justify-content:center;margin-top:36px;flex-wrap:wrap}
+  .meta-chip{
+    display:flex;align-items:center;gap:7px;
+    background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);
+    border-radius:50px;padding:7px 16px;font-size:.8rem;color:var(--muted);
+  }
+  .meta-chip i{color:var(--accent)}
+
+  /* Quiz screen */
+  #screen-quiz{display:none;width:100%;max-width:760px}
+
+  .hud{
+    display:flex;align-items:center;justify-content:space-between;
+    background:rgba(14,21,40,.9);border:1px solid rgba(0,245,212,.15);
+    border-radius:14px;padding:14px 22px;margin-bottom:24px;backdrop-filter:blur(10px);
+    gap:16px;flex-wrap:wrap;
+  }
+  .hud-player{display:flex;align-items:center;gap:10px;font-size:.88rem}
+  .hud-avatar{
+    width:36px;height:36px;border-radius:50%;
+    background:linear-gradient(135deg,var(--accent3),var(--accent2));
+    display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.9rem;
+  }
+  .progress-area{flex:1;min-width:140px}
+  .prog-label{font-size:.72rem;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:5px}
+  .prog-bar-bg{height:6px;background:rgba(255,255,255,.07);border-radius:10px;overflow:hidden}
+  .prog-bar-fill{height:100%;border-radius:10px;background:linear-gradient(90deg,var(--accent3),var(--accent));transition:width .5s ease}
+
+  .timer-box{
+    display:flex;align-items:center;gap:8px;
+    background:rgba(0,245,212,.07);border:1px solid rgba(0,245,212,.2);
+    border-radius:10px;padding:8px 16px;
+  }
+  .timer-icon{font-size:1.1rem}
+  .timer-val{font-family:'Orbitron',sans-serif;font-size:1.05rem;color:var(--accent);letter-spacing:1px}
+  .timer-box.warn{background:rgba(247,37,133,.12);border-color:rgba(247,37,133,.4)}
+  .timer-box.warn .timer-val{color:var(--accent2);animation:pulse .6s infinite}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+
+  .q-counter{font-size:.82rem;color:var(--muted);white-space:nowrap}
+  .q-counter strong{color:var(--accent);font-family:'Orbitron',sans-serif}
+
+  /* Score counter */
+  .score-hud{font-size:.82rem;color:var(--muted);white-space:nowrap}
+  .score-hud .sc{color:var(--green);font-family:'Orbitron',sans-serif;font-weight:700}
+  .score-hud .sw{color:var(--red);font-family:'Orbitron',sans-serif;font-weight:700}
+
+  /* Question card */
+  .q-card{
+    background:rgba(14,21,40,.92);border:1.5px solid rgba(123,47,247,.25);border-radius:22px;
+    padding:40px 44px;
+    box-shadow:0 0 80px rgba(123,47,247,.08),0 24px 60px rgba(0,0,0,.5);
+    backdrop-filter:blur(14px);
+    animation:slideIn .4s cubic-bezier(.22,1,.36,1) forwards;
+  }
+  @keyframes slideIn{from{opacity:0;transform:translateX(40px)}to{opacity:1;transform:translateX(0)}}
+  .q-topic{font-size:.7rem;letter-spacing:2px;text-transform:uppercase;color:var(--accent3);margin-bottom:14px}
+  .q-num-badge{
+    display:inline-block;background:linear-gradient(135deg,var(--accent3),var(--accent2));
+    color:#fff;font-family:'Orbitron',sans-serif;font-size:.72rem;font-weight:700;
+    padding:4px 12px;border-radius:50px;margin-bottom:16px;
+  }
+  .q-text{font-size:1.12rem;font-weight:600;line-height:1.6;color:var(--text);margin-bottom:30px}
+
+  .options{display:grid;gap:12px}
+  .opt-btn{
+    display:flex;align-items:center;gap:14px;
+    width:100%;text-align:left;
+    background:rgba(255,255,255,.03);border:1.5px solid rgba(255,255,255,.08);
+    border-radius:12px;padding:14px 18px;
+    cursor:pointer;color:var(--text);font-family:'Exo 2',sans-serif;font-size:.96rem;
+    transition:all .2s;position:relative;overflow:hidden;
+  }
+  .opt-btn::before{
+    content:'';position:absolute;inset:0;
+    background:linear-gradient(135deg,rgba(123,47,247,.12),rgba(0,245,212,.08));
+    opacity:0;transition:.3s;
+  }
+  .opt-btn:hover:not(:disabled){border-color:rgba(0,245,212,.4);transform:translateX(4px)}
+  .opt-btn:hover:not(:disabled)::before{opacity:1}
+  .opt-letter{
+    min-width:32px;height:32px;border-radius:8px;
+    background:rgba(255,255,255,.06);
+    display:flex;align-items:center;justify-content:center;
+    font-family:'Orbitron',sans-serif;font-size:.75rem;font-weight:700;color:var(--accent3);
+    flex-shrink:0;transition:.2s;
+  }
+  .opt-btn:hover:not(:disabled) .opt-letter{background:var(--accent3);color:#fff}
+
+  .opt-btn.correct-ans{border-color:var(--green)!important;background:rgba(6,214,160,.13)!important;transform:none!important;}
+  .opt-btn.correct-ans .opt-letter{background:var(--green)!important;color:#000!important;}
+  .opt-btn.wrong-ans{border-color:var(--red)!important;background:rgba(239,35,60,.13)!important;transform:none!important;}
+  .opt-btn.wrong-ans .opt-letter{background:var(--red)!important;color:#fff!important;}
+  .opt-btn:disabled{cursor:default;opacity:.75;}
+  .opt-btn.correct-ans,.opt-btn.wrong-ans{opacity:1!important;}
+
+  .feedback-label{
+    display:inline-flex;align-items:center;gap:6px;
+    font-size:.78rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;
+    padding:5px 14px;border-radius:50px;margin-top:16px;
+    animation:popIn .25s cubic-bezier(.22,1,.36,1) forwards;
+  }
+  @keyframes popIn{from{transform:scale(.7);opacity:0}to{transform:scale(1);opacity:1}}
+  .feedback-label.correct{background:rgba(6,214,160,.2);color:var(--green);border:1px solid rgba(6,214,160,.4)}
+  .feedback-label.wrong{background:rgba(239,35,60,.2);color:var(--red);border:1px solid rgba(239,35,60,.4)}
+
+  .card-footer{display:flex;align-items:center;justify-content:space-between;margin-top:32px;flex-wrap:wrap;gap:12px}
+  .btn-nav{padding:13px 32px;border:none;border-radius:12px;font-family:'Orbitron',sans-serif;font-size:.85rem;font-weight:700;letter-spacing:1px;cursor:pointer;transition:all .2s;}
+  .btn-next{background:linear-gradient(135deg,var(--accent3),var(--accent2));color:#fff;box-shadow:0 6px 24px rgba(123,47,247,.35);}
+  .btn-next:hover{transform:translateY(-2px);box-shadow:0 10px 30px rgba(123,47,247,.5)}
+  .btn-submit{background:linear-gradient(135deg,var(--gold),#ff9a00);color:#000;box-shadow:0 6px 24px rgba(255,214,10,.3);}
+  .btn-submit:hover{transform:translateY(-2px);box-shadow:0 10px 30px rgba(255,214,10,.5)}
+  .skip-note{font-size:.76rem;color:var(--muted)}
+  .divider{height:1px;background:linear-gradient(90deg,transparent,rgba(0,245,212,.3),transparent);margin:16px 0}
+
+  /* Confirm overlay */
+  .confirm-overlay{
+    position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:100;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .confirm-box{
+    background:#0e1528;border:1.5px solid rgba(0,245,212,.3);border-radius:20px;
+    padding:36px 40px;text-align:center;max-width:340px;width:90%;
+    box-shadow:0 0 60px rgba(0,245,212,.1);
+  }
+  .confirm-box h3{font-family:'Orbitron',sans-serif;font-size:1.1rem;margin-bottom:12px;color:var(--accent)}
+  .confirm-box p{font-size:.9rem;color:var(--muted);margin-bottom:24px;line-height:1.6}
+  .confirm-btns{display:flex;gap:12px}
+  .cbtn-yes{flex:1;background:linear-gradient(135deg,var(--green),#0aaf8a);border:none;border-radius:10px;color:#000;font-family:'Orbitron',sans-serif;font-size:.82rem;font-weight:700;padding:12px;cursor:pointer;}
+  .cbtn-no{flex:1;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:10px;color:var(--muted);font-family:'Orbitron',sans-serif;font-size:.82rem;font-weight:700;padding:12px;cursor:pointer;}
+  .cbtn-no:hover{background:rgba(255,255,255,.1);color:var(--text)}
+
+  /* Results */
+  #screen-result{display:none;width:100%;max-width:820px;animation:fadeUp .6s ease forwards}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
+
+  .result-header{text-align:center;margin-bottom:40px}
+  .trophy{font-size:5rem;display:block;margin-bottom:16px;animation:bounce 1s ease infinite alternate}
+  @keyframes bounce{from{transform:translateY(0) rotate(-5deg)}to{transform:translateY(-12px) rotate(5deg)}}
+  .result-title{
+    font-family:'Orbitron',sans-serif;font-size:clamp(1.6rem,4vw,2.5rem);font-weight:900;
+    background:linear-gradient(135deg,var(--gold),var(--accent2));
+    -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  }
+  .result-name{font-size:1rem;color:var(--muted);margin-top:6px}
+
+  .score-ring-wrap{display:flex;justify-content:center;margin:32px 0}
+  .score-ring{position:relative;width:180px;height:180px}
+  .score-ring svg{transform:rotate(-90deg)}
+  .ring-bg{fill:none;stroke:rgba(255,255,255,.07);stroke-width:14}
+  .ring-fill{fill:none;stroke-width:14;stroke-linecap:round;transition:stroke-dashoffset 1.5s cubic-bezier(.4,0,.2,1)}
+  .score-inner{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+  .score-pct{font-family:'Orbitron',sans-serif;font-size:2.2rem;font-weight:900}
+  .score-lbl{font-size:.7rem;color:var(--muted);letter-spacing:2px;text-transform:uppercase}
+
+  .stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;margin-bottom:36px}
+  .stat-card{background:rgba(14,21,40,.9);border-radius:16px;padding:22px 18px;text-align:center;border:1.5px solid rgba(255,255,255,.06);}
+  .stat-card.correct{border-color:rgba(6,214,160,.3);background:rgba(6,214,160,.05)}
+  .stat-card.incorrect{border-color:rgba(239,35,60,.3);background:rgba(239,35,60,.05)}
+  .stat-card.skipped{border-color:rgba(255,214,10,.3);background:rgba(255,214,10,.05)}
+  .stat-val{font-family:'Orbitron',sans-serif;font-size:2rem;font-weight:900}
+  .stat-card.correct .stat-val{color:var(--green)}
+  .stat-card.incorrect .stat-val{color:var(--red)}
+  .stat-card.skipped .stat-val{color:var(--gold)}
+  .stat-desc{font-size:.78rem;color:var(--muted);margin-top:4px;letter-spacing:1px;text-transform:uppercase}
+
+  .result-actions{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;margin-bottom:44px}
+  .btn-action{padding:14px 30px;border:none;border-radius:13px;font-family:'Orbitron',sans-serif;font-size:.82rem;font-weight:700;letter-spacing:1px;cursor:pointer;transition:all .2s;}
+  .btn-review{background:linear-gradient(135deg,var(--accent3),#3a86ff);color:#fff;box-shadow:0 6px 20px rgba(123,47,247,.35)}
+  .btn-review:hover{transform:translateY(-2px)}
+  .btn-retake{background:rgba(255,255,255,.06);color:var(--text);border:1px solid rgba(255,255,255,.12)}
+  .btn-retake:hover{background:rgba(255,255,255,.1)}
+
+  /* Review */
+  .review-section{display:none}
+  .review-title{font-family:'Orbitron',sans-serif;font-size:1.1rem;color:var(--accent);margin-bottom:20px;text-align:center;letter-spacing:2px}
+  .review-item{background:rgba(14,21,40,.9);border-radius:16px;padding:22px 24px;margin-bottom:14px;border-left:4px solid;}
+  .review-item.correct{border-color:var(--green)}
+  .review-item.incorrect{border-color:var(--red)}
+  .review-item.skipped{border-color:var(--gold)}
+  .review-q{font-size:.92rem;font-weight:600;margin-bottom:14px;line-height:1.5}
+  .review-q .ri-num{font-family:'Orbitron',sans-serif;font-size:.75rem;color:var(--muted);display:block;margin-bottom:4px}
+  .review-answers{display:flex;flex-direction:column;gap:6px;font-size:.84rem}
+  .ra{display:flex;align-items:center;gap:10px;padding:7px 12px;border-radius:8px}
+  .ra.your-wrong{background:rgba(239,35,60,.12);color:var(--red)}
+  .ra.correct-ans-r{background:rgba(6,214,160,.12);color:var(--green)}
+  .ra.your-correct{background:rgba(6,214,160,.12);color:var(--green)}
+  .ra.neutral{background:rgba(255,255,255,.03);color:var(--muted)}
+
+  /* Confetti */
+  .confetti-piece{
+    position:fixed;width:10px;height:10px;border-radius:2px;
+    animation:confettiFall var(--cf-dur,3s) ease-in var(--cf-delay,0s) forwards;
+    pointer-events:none;z-index:1000;
+  }
+  @keyframes confettiFall{0%{transform:translateY(-20px) rotate(0deg);opacity:1}100%{transform:translateY(100vh) rotate(720deg);opacity:0}}
+
+  @media(max-width:600px){
+    .q-card{padding:24px 20px}
+    .neon-box{padding:28px 22px}
+    .hud{gap:10px}
+  }
+</style>
+</head>
+<body>
+
+<div id="stars"></div>
+<div class="blob blob1"></div>
+<div class="blob blob2"></div>
+<div class="blob blob3"></div>
+
+<div class="app">
+
+  <!-- LANDING -->
+  <div id="screen-landing">
+    <div class="logo-badge"><span>🌿</span> NMAM Institute of Technology</div>
+    <h1 class="main-title">Environmental<br>Science</h1>
+    <p class="subtitle">25CIV104 · Unit 1 & 2 · Mid-Semester MCQ Challenge</p>
+
+    <div class="neon-box">
+      <label class="field-label" for="nameInput">📋 Enter Your Name to Begin</label>
+      <input class="name-input" id="nameInput" type="text" placeholder="Your full name…" autocomplete="off" maxlength="40"/>
+      <button class="btn-start" id="btnStart" onclick="startQuiz()">
+        <span>🚀 &nbsp;Launch Quiz</span>
+      </button>
+    </div>
+
+    <div class="quiz-meta">
+      <div class="meta-chip"><i>📝</i> 330 Questions</div>
+      <div class="meta-chip"><i>⏱️</i> 60 Minutes</div>
+      <div class="meta-chip"><i>📚</i> 2 Units</div>
+      <div class="meta-chip"><i>🔀</i> Shuffled Every Time</div>
+      <div class="meta-chip"><i>⚡</i> Instant Feedback</div>
+    </div>
+  </div>
+
+  <!-- QUIZ -->
+  <div id="screen-quiz">
+    <div class="hud">
+      <div class="hud-player">
+        <div class="hud-avatar" id="avatarInitial">?</div>
+        <div>
+          <div style="font-weight:700;font-size:.9rem" id="hudName">Player</div>
+          <div style="font-size:.72rem;color:var(--muted)">25CIV104 · ESS</div>
+        </div>
+      </div>
+      <div class="progress-area">
+        <div class="prog-label">Progress — <span id="progText">0/330</span></div>
+        <div class="prog-bar-bg"><div class="prog-bar-fill" id="progFill" style="width:0%"></div></div>
+      </div>
+      <div class="q-counter">Q <strong id="curQNum">1</strong> / <strong>330</strong></div>
+      <div class="score-hud">✅ <span class="sc" id="hudCorrect">0</span> &nbsp; ❌ <span class="sw" id="hudWrong">0</span></div>
+      <div class="timer-box" id="timerBox">
+        <span class="timer-icon">⏱️</span>
+        <span class="timer-val" id="timerVal">60:00</span>
+      </div>
+    </div>
+
+    <div class="q-card" id="qCard">
+      <div class="q-topic" id="qTopic">Topic</div>
+      <div class="q-num-badge" id="qNumBadge">Q1</div>
+      <div class="q-text" id="qText">Loading…</div>
+      <div class="options" id="optionsWrap"></div>
+      <div id="feedbackLabel"></div>
+      <div class="divider"></div>
+      <div class="card-footer">
+        <button class="btn-nav btn-next" id="btnPrev" onclick="navigate(-1)" style="background:rgba(255,255,255,.06);color:var(--muted);border:1px solid rgba(255,255,255,.1)">← Prev</button>
+        <span class="skip-note" id="skipNote"></span>
+        <button class="btn-nav btn-next" id="btnNext" onclick="navigate(1)">Next →</button>
+        <button class="btn-nav btn-submit" id="btnSubmit" style="display:none" onclick="showConfirm()">🏁 Submit Quiz</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- RESULT -->
+  <div id="screen-result">
+    <div class="result-header">
+      <span class="trophy" id="trophyEmoji">🏆</span>
+      <div class="result-title" id="resultTitle">Quiz Complete!</div>
+      <div class="result-name" id="resultName"></div>
+    </div>
+
+    <div class="score-ring-wrap">
+      <div class="score-ring">
+        <svg viewBox="0 0 180 180" width="180" height="180">
+          <circle class="ring-bg" cx="90" cy="90" r="76"/>
+          <circle class="ring-fill" id="ringFill" cx="90" cy="90" r="76" stroke-dasharray="477.5" stroke-dashoffset="477.5"/>
+        </svg>
+        <div class="score-inner">
+          <div class="score-pct" id="scorePct" style="color:var(--accent)">0%</div>
+          <div class="score-lbl">Score</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="stat-grid">
+      <div class="stat-card correct"><div class="stat-val" id="statCorrect">0</div><div class="stat-desc">✅ Correct</div></div>
+      <div class="stat-card incorrect"><div class="stat-val" id="statIncorrect">0</div><div class="stat-desc">❌ Incorrect</div></div>
+      <div class="stat-card skipped"><div class="stat-val" id="statSkipped">0</div><div class="stat-desc">⏭️ Skipped</div></div>
+      <div class="stat-card" style="border-color:rgba(0,245,212,.3);background:rgba(0,245,212,.05)">
+        <div class="stat-val" id="statTimeTaken" style="color:var(--accent)">--:--</div>
+        <div class="stat-desc">⏱️ Time Used</div>
+      </div>
+    </div>
+
+    <div class="result-actions">
+      <button class="btn-action btn-review" onclick="toggleReview()">📖 Review Answers</button>
+      <button class="btn-action btn-retake" onclick="retakeQuiz()">🔁 Retake Quiz</button>
+    </div>
+
+    <div class="review-section" id="reviewSection">
+      <div class="review-title">📖 Answer Review</div>
+      <div id="reviewList"></div>
+    </div>
+  </div>
+
 </div>
 
-<!-- QUIZ -->
-<div id="screen-quiz" style="display:none;">
-  <div id="prog-label"></div>
-  <div id="prog-fill" style="height:5px;background:#22c55e;width:0;"></div>
-
-  <div id="q-counter"></div>
-
-  <h3 id="q-text"></h3>
-  <div id="options-grid"></div>
-
-  <div id="q-answered"></div>
-
-  <button id="btn-next" disabled>Next</button>
-</div>
-
-<!-- RESULT -->
-<div id="screen-result" style="display:none;">
-  <h2>Result</h2>
-  <p id="r-score"></p>
-  <p id="r-total"></p>
-  <p id="r-pct"></p>
-  <p id="r-msg"></p>
-  <p>Correct: <span id="r-correct"></span></p>
-  <p>Wrong: <span id="r-wrong"></span></p>
-
-  <button id="btn-retake">Retry</button>
-</div>
-
-</div>
+<!-- Confirm overlay (injected dynamically) -->
 
 <script>
+const ALL_QUESTIONS = [
+  {u:1,q:"Energy conservation refers to:",opts:["Efficient and wise use of energy resources","Using more energy","Generating electricity using coal","Avoiding renewable energy sources"],a:0},
+  {u:1,q:"Which device converts sunlight directly into electricity?",opts:["Photovoltaic cell","Wind turbine","Hydroelectric dam","Biomass generator"],a:0},
+  {u:1,q:"Which gas is mainly responsible for the greenhouse effect?",opts:["Carbon Dioxide","Oxygen","Nitrogen","Helium"],a:0},
+  {u:1,q:"Which renewable energy source is generated from organic matter?",opts:["Biomass","Solar","Wind","Hydropower"],a:0},
+  {u:1,q:"Wind turbines convert:",opts:["Kinetic energy into electricity","Solar energy into electricity","Heat energy into electricity","Mechanical energy into heat"],a:0},
+  {u:1,q:"Which is the cleanest renewable energy source?",opts:["Solar","Coal","Natural Gas","Oil"],a:0},
+  {u:1,q:"What is biomass energy primarily derived from?",opts:["Organic matter","Fossil fuels","Nuclear reactions","Wind"],a:0},
+  {u:1,q:"Which gas is produced during anaerobic digestion of biomass?",opts:["Methane","Oxygen","Carbon dioxide","Nitrogen"],a:0},
+  {u:1,q:"Which process converts biomass into liquid biofuels?",opts:["Fermentation","Photosynthesis","Gasification","Combustion"],a:0},
+  {u:1,q:"Bioethanol is mainly produced from:",opts:["Corn and sugarcane","Wood","Coal","Solar energy"],a:0},
+  {u:1,q:"Which biomass technology produces heat and electricity directly by burning biomass?",opts:["Combustion","Anaerobic digestion","Gasification","Fermentation"],a:0},
+  {u:1,q:"Energy efficiency means:",opts:["Using less energy to perform the same task","Using energy wastefully","Using more energy than required","Replacing energy with fuel"],a:0},
+  {u:1,q:"Biodiesel is mainly produced from:",opts:["Vegetable oils and animal fats","Coal","Natural gas","Wood"],a:0},
+  {u:1,q:"Hydrogen fuel cells convert:",opts:["Chemical energy into electricity","Chemical energy directly into heat","Electrical energy into mechanical energy","Mechanical energy into chemical energy"],a:0},
+  {u:1,q:"Electrolysis of water produces hydrogen and:",opts:["Oxygen","Nitrogen","Carbon dioxide","Methane"],a:0},
+  {u:1,q:"What is a major challenge of using hydrogen as a fuel?",opts:["Storage and transportation difficulties","High carbon emissions","Low energy content","Limited fuel availability"],a:0},
+  {u:1,q:"Which is NOT a common method of hydrogen production?",opts:["Combustion","Electrolysis","Steam methane reforming","Biomass gasification"],a:0},
+  {u:1,q:"Fuel cells require:",opts:["Hydrogen and oxygen","Constant supply of fossil fuels","Nuclear fuel","Coal"],a:0},
+  {u:1,q:"Tidal barrages work similarly to:",opts:["Hydroelectric dams","Wind turbines","Solar panels","Geothermal plants"],a:0},
+  {u:1,q:"Which country operates the largest tidal power station?",opts:["South Korea","United States","Canada","France"],a:0},
+  {u:1,q:"Ocean energy is considered:",opts:["Renewable","Non-renewable","Fossil fuel-based","Polluting"],a:0},
+  {u:1,q:"Which device harnesses energy from ocean waves?",opts:["Oscillating water column","Pelton wheel","Steam turbine","Photovoltaic cells"],a:0},
+  {u:1,q:"Which device helps in energy conservation in homes?",opts:["LED light","Incandescent bulb","Diesel generator","Ceiling fan"],a:0},
+  {u:1,q:"The unit used to measure tidal range is:",opts:["Meters","Kilowatts","Joules","Pascals"],a:0},
+  {u:1,q:"Tidal energy is converted into electricity using:",opts:["Turbines","Solar panels","Gas engines","Batteries"],a:0},
+  {u:1,q:"The height difference between high tide and low tide is called:",opts:["Tide range","Wave height","Tidal flow","Tidal speed"],a:0},
+  {u:1,q:"What is the primary source of geothermal energy?",opts:["Heat from Earth's interior","Sunlight","Ocean currents","Wind movement"],a:0},
+  {u:1,q:"Which best describes the source of geothermal energy?",opts:["Radioactive decay of materials in Earth's core","Photosynthesis","Ocean waves","Burning of coal"],a:0},
+  {u:1,q:"The first commercial geothermal power plant was established in:",opts:["1904","1864","1950","1975"],a:0},
+  {u:1,q:"Which layer of the Earth contributes most to geothermal heat?",opts:["Inner core","Crust","Mantle","Outer core"],a:0},
+  {u:1,q:"What type of rock is typically associated with geothermal activity?",opts:["Igneous","Sedimentary","Metamorphic","Limestone"],a:0},
+  {u:1,q:"Geothermal energy is found most abundantly in:",opts:["Volcanic regions and tectonic plate boundaries","Desert areas","Coastal regions","High-altitude mountains"],a:0},
+  {u:1,q:"Geothermal heat transfer from Earth's interior to surface is primarily through:",opts:["Convection","Radiation","Conduction","Evaporation"],a:0},
+  {u:1,q:"Which energy management technique involves studying energy usage patterns?",opts:["Energy audit","Billing system","Fuel combustion","Load shedding"],a:0},
+  {u:1,q:"The main objective of energy management is:",opts:["To optimize energy use and reduce wastage","To increase consumption of energy","To promote only fossil fuels","To stop industrial growth"],a:0},
+  {u:1,q:"The first step in an energy management program is:",opts:["Energy audit","Energy conservation","Installation of renewable energy systems","Monitoring and targeting"],a:0},
+  {u:1,q:"Example of energy conservation in households:",opts:["Installing solar water heaters","Using an oversized air-conditioner","Keeping lights on during the day","Using incandescent bulbs"],a:0},
+  {u:1,q:"Main advantage of cogeneration (CHP):",opts:["Simultaneous production of heat and electricity","Increased greenhouse gas emissions","Reduced reliability of supply","Higher transmission losses"],a:0},
+  {u:1,q:"Primary goal of energy management:",opts:["Reduce energy costs and improve efficiency","Increase energy consumption","Promote fossil fuel usage","Eliminate renewable energy sources"],a:0},
+  {u:1,q:"Tool used in energy management:",opts:["Energy audit","Thermometer","Barometer","Altimeter"],a:0},
+  {u:1,q:"Benefit of energy audit:",opts:["Identify energy-saving opportunities","Increase electricity bills","Promote energy wastage","Reduce employee productivity"],a:0},
+  {u:1,q:"Main goal of energy conservation:",opts:["Reduce energy consumption and waste","Increase energy production","Promote fossil fuel usage","Maximize electricity bills"],a:0},
+  {u:1,q:"Most energy-efficient lighting appliance:",opts:["LED","Incandescent bulb","Halogen lamp","CFL"],a:0},
+  {u:1,q:"Need to explore new energy sources:",opts:["Reduce environmental pollution and ensure sustainability","Increase fossil fuel consumption","Maintain current usage patterns","Avoid technological advancement"],a:0},
+  {u:1,q:"The energy conservation act in India was passed in:",opts:["2001","1995","2010","2005"],a:0},
+  {u:1,q:"Major drawback of fossil fuels:",opts:["Cause pollution and are non-renewable","Renewable","Abundant and clean","Used in solar panels"],a:0},
+  {u:1,q:"Key benefit of renewable energy sources:",opts:["Clean and sustainable","Limited and expensive","Emit high CO2","Require fossil fuels"],a:0},
+  {u:1,q:"Global issue driving shift to new energy sources:",opts:["Climate change and global warming","Increased rainfall","Population decline","Improved fossil fuels"],a:0},
+  {u:1,q:"Which is NOT a type of primary resource?",opts:["Hydrogen energy","Crude oil","Coal","Sunlight"],a:0},
+  {u:1,q:"Primary characteristic of renewable energy:",opts:["Can be used indefinitely without depletion","Derived from fossil fuels","Requires long time to replenish","Causes significant pollution"],a:0},
+  {u:1,q:"Main environmental benefit of renewable energy:",opts:["Decreased greenhouse gas emissions","Increased deforestation","Increased air pollution","Depletion of natural resources"],a:0},
+  {u:1,q:"Solar energy is:",opts:["Renewable and non-conventional","Non-renewable and non-conventional","Renewable and conventional","Non-renewable"],a:0},
+  {u:1,q:"Demand for renewable sources is due to:",opts:["Low or zero carbon footprint","Emit greenhouse gases","More efficient","Decreasing global temperatures"],a:0},
+  {u:1,q:"True about most renewable energy sources:",opts:["Location-specific","Universally available","Highly efficient","Polluting"],a:0},
+  {u:1,q:"Renewable source using Earth's internal heat:",opts:["Geothermal","Biomass","Solar","Tidal"],a:0},
+  {u:1,q:"Which body is responsible for energy efficiency in India?",opts:["BEE","SEBI","RBI","ISRO"],a:0},
+  {u:1,q:"Major advantage of renewable energy:",opts:["Long-term sustainability","Rapid depletion","High emissions","Limited availability"],a:0},
+  {u:1,q:"Renewable energy using photovoltaic cells:",opts:["Solar","Wind","Geothermal","Biomass"],a:0},
+  {u:1,q:"Hydropower converts:",opts:["Kinetic and potential energy of water","Solar energy","Chemical energy","Wind energy"],a:0},
+  {u:1,q:"Disadvantage of solar energy:",opts:["Limited sunlight in some areas","Emits greenhouse gases","Causes noise pollution","Depletes natural resources"],a:0},
+  {u:1,q:"Fermentation in biogas plant occurs at:",opts:["30–50°C","35–50°C","85–15°C","None of these"],a:0},
+  {u:1,q:"Commonly used in fermentation:",opts:["Yeast","Bacteria","Mushrooms","Virus"],a:0},
+  {u:1,q:"Solid biomass example:",opts:["Agricultural residues","Wastewater","Industrial effluents","Plastic"],a:0},
+  {u:1,q:"Hydrogen is produced commercially by:",opts:["Both electrolysis and cracking ammonia","Cracking ammonia only","Electrolysis only","Gasification only"],a:0},
+  {u:1,q:"Hydrogen is used in:",opts:["Fuel cells","Fossil fuels","Anaerobic digestion","Cooking"],a:0},
+  {u:1,q:"Hydrogen is hazardous because:",opts:["Low ignition energy, high combustion energy","High ignition, low combustion","High ignition, high combustion","Low ignition, low combustion"],a:0},
+  {u:1,q:"Energy Star label on an appliance indicates:",opts:["Energy efficiency","Poor performance","Low price","Low warranty"],a:0},
+  {u:1,q:"Catalytic liquefaction occurs at:",opts:["Low temperature, high pressure","Low temperature, low pressure","High temperature, high pressure","High temperature, low pressure"],a:0},
+  {u:1,q:"Which is NOT an ocean energy resource?",opts:["Geothermal","Tidal","Wave","Ocean thermal"],a:0},
+  {u:1,q:"Principle of OTEC:",opts:["Temperature difference between surface and deep water","High salinity","Ocean currents","Sea wave action"],a:0},
+  {u:1,q:"Cause of wave energy:",opts:["Wind across sea surface","Ocean currents","Earth's rotation","Tides"],a:0},
+  {u:1,q:"Main limitation of ocean energy:",opts:["High capital cost","High pollution","Abundant","Easy conversion"],a:0},
+  {u:1,q:"India's first wave energy project:",opts:["Vizhinjam","Chennai","Mumbai","Goa"],a:0},
+  {u:1,q:"Cause of tides:",opts:["Gravitational pull of Moon and Sun","Earth rotation","Ocean currents","Wind"],a:0},
+  {u:1,q:"Common method of tidal power generation:",opts:["Tidal barrage","OTEC","Floating solar","Offshore wind"],a:0},
+  {u:1,q:"Single-basin tidal plant works on:",opts:["One-way flow","Two-way flow","Only high tide","Only low tide"],a:0},
+  {u:1,q:"Main component converting tidal energy:",opts:["Tidal turbine","Heat exchanger","Wave converter","Solar panel"],a:0},
+  {u:1,q:"One unit of electricity is equal to:",opts:["1 kilowatt-hour","1 kilowatt","1 watt","1 megawatt"],a:0},
+  {u:1,q:"Advantage of tidal energy:",opts:["Predictable","High emissions","Short plant life","Needs fuel"],a:0},
+  {u:1,q:"The word 'geothermal' originates from:",opts:["Greek","Latin","French","German"],a:0},
+  {u:1,q:"Geothermal energy is used for:",opts:["Heating, cooling, and electricity","Solar power","Tidal energy","Wind energy"],a:0},
+  {u:1,q:"High-temperature geothermal resource is:",opts:[">150°C","<90°C","90–150°C","30–60°C"],a:0},
+  {u:1,q:"Source of geothermal heat:",opts:["Residual heat and radioactive decay","Sunlight","Ocean currents","Wind"],a:0},
+  {u:1,q:"Isotopes responsible for geothermal heat:",opts:["U-238, Th-232, K-40","C-14, U-235, He-3","Na-22, Cl-37, O-18","H-1, He-4, Ar-36"],a:0},
+  {u:1,q:"Which is NOT linked to geothermal activity?",opts:["Sand dunes","Hot rocks","Volcanic areas","Faults"],a:0},
+  {u:1,q:"Hydrothermal reservoirs consist of:",opts:["Hot water or steam in porous rocks","Cold water","Frozen water","Sand"],a:0},
+  {u:1,q:"Artificial water injection is needed in:",opts:["Hot dry rock systems","Hydrothermal","Geopressurized","Ocean thermal"],a:0},
+  {u:1,q:"Most common geothermal power plant type:",opts:["Flash steam","Dry steam","Binary cycle","Hybrid"],a:0},
+  {u:1,q:"Which is a renewable energy source?",opts:["Solar energy","Coal","Natural gas","Nuclear energy"],a:0},
+  {u:1,q:"Binary cycle plants are suitable for:",opts:["Medium and low temperature resources","High temperature only","Only volcanic areas","Ocean geothermal"],a:0},
+  {u:1,q:"Injection wells are used for:",opts:["Returning cooled water to reservoir","Cooling turbines","Extracting steam","Separating minerals"],a:0},
+  {u:1,q:"Major advantage of geothermal energy:",opts:["Provides baseload power","Highly polluting","Only daytime availability","Large land requirement"],a:0},
+  {u:1,q:"Operational lifespan of a geothermal plant:",opts:["More than 30 years","5–10 years","10–15 years","20–25 years"],a:0},
+  {u:1,q:"Major challenge in geothermal energy:",opts:["High initial costs","No drilling needed","Only in deserts","Produces large CO2"],a:0},
+  {u:2,q:"Sustainability focuses on:",opts:["Meeting present needs without compromising future needs","Present generation only","Future generations only","Profit maximization"],a:0},
+  {u:2,q:"Assertion: Renewable energy reduces GHG emissions. Reason: They do not emit CO2 during operation.",opts:["Both true, Reason is correct explanation","Both true, but unrelated","A true, R false","A false, R true"],a:0},
+  {u:2,q:"The Brundtland Report was published in:",opts:["1987","1980","1992","2000"],a:0},
+  {u:2,q:"Overuse of groundwater is an example of:",opts:["Environmental unsustainability","Economic sustainability","Social sustainability","Policy failure only"],a:0},
+  {u:2,q:"The circular economy approach encourages:",opts:["Recycling and resource reuse","Linear production and disposal","Increased resource extraction","Export of waste"],a:0},
+  {u:2,q:"The Rio Earth Summit was held in:",opts:["1992","1972","1987","2015"],a:0},
+  {u:2,q:"Which is a major challenge to sustainability in developing nations?",opts:["Overpopulation","Cold climate","Overeducation","Industrial automation"],a:0},
+  {u:2,q:"Fossil fuel dependency primarily affects the:",opts:["Environmental pillar","Economic pillar","Social pillar","Technological pillar"],a:0},
+  {u:2,q:"Sustainable agriculture promotes:",opts:["Conservation of soil and biodiversity","Use of more pesticides","Deforestation","Over-irrigation"],a:0},
+  {u:2,q:"The 3Rs concept in waste management stands for:",opts:["Reduce, Reuse, Recycle","Remove, Rebuild, Recover","Reclaim, Refine, Replace","Reuse, Reject, Retain"],a:0},
+  {u:2,q:"Carbon footprint refers to:",opts:["Greenhouse gas emissions","Soil fertility level","Waste generation rate","Air quality index"],a:0},
+  {u:2,q:"The major greenhouse gas responsible for global warming is:",opts:["Carbon dioxide","Oxygen","Methane","Nitrogen"],a:0},
+  {u:2,q:"Which is a social aspect of sustainability?",opts:["Public health","Energy efficiency","Biodiversity","Recycling"],a:0},
+  {u:2,q:"A sustainable city is one that:",opts:["Uses efficient waste and energy systems","Promotes unplanned expansion","Encourages high fuel use","Ignores green spaces"],a:0},
+  {u:2,q:"Which represents social sustainability?",opts:["Equal access to education","Overfishing","Deforestation","Industrial pollution"],a:0},
+  {u:2,q:"The main focus of the Paris Agreement 2015 is:",opts:["Reduction of greenhouse gas emissions","Biodiversity protection","Waste recycling","Population control"],a:0},
+  {u:2,q:"Green buildings are designed mainly to:",opts:["Use natural light and energy efficiently","Increase carbon emissions","Reduce ventilation","Increase energy consumption"],a:0},
+  {u:2,q:"Sustainability considers human societies and economies as:",opts:["Embedded within the natural environment","Separate from the natural environment","Independent of ecosystems","Driven solely by financial systems"],a:0},
+  {u:2,q:"The three pillars of sustainability (three Es) are:",opts:["Environment, Social Equity, Economics","Ecology, Energy, Economy","Environment, Society, Politics","Environment, Education, Engineering"],a:0},
+  {u:2,q:"Trade-offs in sustainability decisions mean:",opts:["Choices involve balancing environmental, economic, and social values","All solutions are universally beneficial","Economic growth always outweighs environment","There is a single best solution"],a:0},
+  {u:2,q:"Main criticism of focusing solely on economic growth:",opts:["It ignores ecological and social limits","It guarantees environmental balance","It improves equality automatically","It reduces global trade"],a:0},
+  {u:2,q:"Which is NOT part of social equity in sustainability?",opts:["Rapid industrial automation regardless of jobs","Human rights","Education and healthcare access","Fair employment opportunities"],a:0},
+  {u:2,q:"Goal of applying the three pillars of sustainability:",opts:["Balance between society, economy, and environment","Eliminate the need for economic systems","Focus only on carbon reduction","Maximize immediate consumption"],a:0},
+  {u:2,q:"Kyoto Protocol is related to:",opts:["Greenhouse gas reduction","Ozone protection","Biodiversity","Forest laws"],a:0},
+  {u:2,q:"In sustainability, 'embedded systems' means:",opts:["Economy and society exist within the environment","Environment exists within the economy","Three pillars function independently","Resources are infinite"],a:0},
+  {u:2,q:"Decision-making in sustainability is often difficult because:",opts:["It involves trade-offs between economic, social, and environmental priorities","There are no environmental constraints","It always leads to profit","It guarantees universal acceptance"],a:0},
+  {u:2,q:"Which best captures the essence of sustainability?",opts:["Balancing environmental protection, social justice, and economic development","Prioritizing rapid industrial growth","Treating economy as separate from natural limits","Ignoring intergenerational equity"],a:0},
+  {u:2,q:"Which is a sustainability trade-off example?",opts:["Wind turbines providing clean energy but affecting bird migration","Recycling plastic bottles into fabric","Installing rooftop solar panels","Using bicycles instead of cars"],a:0},
+  {u:2,q:"How many SDGs and targets are there?",opts:["17 Goals and 169 targets","8 Goals and 20 targets","10 Goals and 100 targets","20 Goals and 200 targets"],a:0},
+  {u:2,q:"The deadline for achieving SDGs is:",opts:["2030","2025","2040","2050"],a:0},
+  {u:2,q:"Goal 1 of SDGs aims to:",opts:["No Poverty","Zero Hunger","Quality Education","Decent Work"],a:0},
+  {u:2,q:"The poverty line set by SDGs for extreme poverty is:",opts:["$1.90/day","$1.50/day","$2.50/day","$5.00/day"],a:0},
+  {u:2,q:"Goal 2 (Zero Hunger) focuses on:",opts:["Ending hunger and promoting sustainable agriculture","Free housing for all","Ending poverty in all forms","Reducing food wastage only"],a:0},
+  {u:2,q:"Reducing maternal mortality to under 70 per 100,000 live births is under:",opts:["Goal 3","Goal 2","Goal 4","Goal 5"],a:0},
+  {u:2,q:"A carbon credit equals:",opts:["1 tonne CO2","1 kg CO2","100 tonnes CO2","10 tonnes CO2"],a:0},
+  {u:2,q:"Free, equitable, quality primary and secondary education is under:",opts:["Goal 4 – Quality Education","Goal 2 – Zero Hunger","Goal 6 – Clean Water","Goal 7 – Clean Energy"],a:0},
+  {u:2,q:"Eliminating child marriage is a target of:",opts:["Goal 5 – Gender Equality","Goal 3 – Good Health","Goal 4 – Quality Education","Goal 6 – Clean Water"],a:0},
+  {u:2,q:"Universal access to safe drinking water falls under:",opts:["Goal 6","Goal 9","Goal 11","Goal 13"],a:0},
+  {u:2,q:"Goal 7 of SDGs focuses on:",opts:["Affordable and Clean Energy","Sustainable Cities","Climate Action","Peace and Justice"],a:0},
+  {u:2,q:"Doubling the energy efficiency improvement rate is part of:",opts:["Goal 7","Goal 5","Goal 8","Goal 12"],a:0},
+  {u:2,q:"Full and productive employment for all is a target under:",opts:["Goal 8","Goal 6","Goal 10","Goal 15"],a:0},
+  {u:2,q:"Goal 9 emphasizes:",opts:["Sustainable industrialization and resilient infrastructure","Reducing inequality","Sustainable agriculture","Protecting marine ecosystems"],a:0},
+  {u:2,q:"Goal 10 aims to:",opts:["Reduce inequalities within and among countries","Promote life on land","Ensure responsible consumption","Enhance peace and justice"],a:0},
+  {u:2,q:"Sustainable transport systems and affordable housing is part of:",opts:["Goal 11","Goal 9","Goal 13","Goal 17"],a:0},
+  {u:2,q:"Reducing per capita global food waste is a target under:",opts:["Goal 12","Goal 2","Goal 14","Goal 15"],a:0},
+  {u:2,q:"Which SDG ensures 'Affordable and Clean Energy'?",opts:["SDG 7","SDG 5","SDG 6","SDG 8"],a:0},
+  {u:2,q:"Strengthening resilience to climate-related disasters is under:",opts:["Goal 13","Goal 7","Goal 14","Goal 16"],a:0},
+  {u:2,q:"Preventing marine pollution is targeted under:",opts:["Goal 14","Goal 12","Goal 15","Goal 17"],a:0},
+  {u:2,q:"Goal 17 of SDGs is primarily focused on:",opts:["Enhancing global partnerships","Promoting innovation and infrastructure","Providing justice and strong institutions","Reducing poverty"],a:0},
+  {u:2,q:"Main purpose of sustainability indicators:",opts:["Evaluate progress toward SDGs","Track GDP growth","Monitor stock markets","Measure industrial profits"],a:0},
+  {u:2,q:"Which is an environmental indicator?",opts:["Carbon footprint","Literacy rate","Employment rate","GDP growth"],a:0},
+  {u:2,q:"Which indicator measures freshwater used in producing goods?",opts:["Water footprint","Water scarcity index","Carbon footprint","Energy efficiency index"],a:0},
+  {u:2,q:"Which SDG focuses on climate action?",opts:["SDG 13","SDG 7","SDG 12","SDG 15"],a:0},
+  {u:2,q:"What does SMART stand for in sustainability indicators?",opts:["Specific, Measurable, Achievable, Relevant, Time-bound","Social, Measurable, Accurate, Relevant, Timely","Sustainable, Monetary, Actionable, Reliable, Targeted","Standardized, Manageable, Accurate, Realistic, Timely"],a:0},
+  {u:2,q:"Which is NOT a social indicator?",opts:["Air quality","Life expectancy","Employment rate","Gender equality"],a:0},
+  {u:2,q:"Which economic indicator measures value per unit of natural resource consumed?",opts:["Resource productivity","Green GDP","Financial stability","Sustainable consumption"],a:0},
+  {u:2,q:"Which is an example of climate change mitigation?",opts:["Afforestation","Overfishing","Urban sprawl","Burning coal"],a:0},
+  {u:2,q:"Which intervention area addresses reduction of industrial and vehicular emissions?",opts:["Pollution control","Non-renewable energy","Water utilization","Fossil fuels"],a:0},
+  {u:2,q:"Which is a local environmental issue?",opts:["Urban heat islands","Global warming","Ocean acidification","Deforestation in Amazon"],a:0},
+  {u:2,q:"Circular economy practices are part of which intervention area?",opts:["Environmental","Social","Economic","Educational"],a:0},
+  {u:2,q:"Which is an example of a social indicator?",opts:["Literacy rate","Biodiversity","Energy consumption","CO2 emissions"],a:0},
+  {u:2,q:"Which environmental indicator tracks energy use from renewable and non-renewable sources?",opts:["Energy consumption","Resource productivity","Water footprint","Financial stability"],a:0},
+  {u:2,q:"Which is an economic intervention area?",opts:["Sustainable business practices","Renewable energy implementation","Health improvement programs","Education and awareness"],a:0},
+  {u:2,q:"Which is a climate change metric?",opts:["Carbon footprint","Literacy rate","Employment rate","Financial stability"],a:0},
+  {u:2,q:"Which is a social intervention area?",opts:["Gender equality and social inclusion","Water conservation","Pollution control","Renewable energy implementation"],a:0},
+  {u:2,q:"Which intervention area includes rainwater harvesting and efficient irrigation?",opts:["Environmental","Social","Economic","Educational"],a:0},
+  {u:2,q:"Which indicator measures the level of hazardous waste disposal?",opts:["Environmental indicator","Social indicator","Economic indicator","Cultural indicator"],a:0},
+  {u:2,q:"Assertion: SDG 14 relates to Life below Water. Reason: It addresses marine pollution.",opts:["Both true, Reason is correct explanation","A true, R false","Both false","A false, R true"],a:0},
+  {u:2,q:"Which indicator measures GDP adjusted for sustainability?",opts:["Green GDP","Resource productivity","Carbon footprint","Water footprint"],a:0},
+  {u:2,q:"National-level application of sustainability indicators:",opts:["Prioritizing policies based on SDG targets","Tracking municipal waste generation","Promoting local green spaces","Educating communities"],a:0},
+  {u:2,q:"Which indicator identifies gaps in gender equality in the workforce?",opts:["Gender inequality index","Life expectancy","Water footprint","Energy consumption"],a:0},
+  {u:2,q:"Which intervention area promotes green supply chains and eco-certifications?",opts:["Economic","Social","Environmental","Policy"],a:0},
+  {u:2,q:"Which indicator monitors participation in decision-making?",opts:["Social indicator","Environmental indicator","Economic indicator","Governance indicator"],a:0},
+  {u:2,q:"Practical application of sustainability indicators for industries:",opts:["Monitoring energy consumption and emissions","Promoting local festivals","Encouraging urban heat islands","Increasing air pollution"],a:0},
+  {u:2,q:"Which indicator measures material consumption per capita?",opts:["Sustainable consumption","Resource productivity","Carbon footprint","Water footprint"],a:0},
+  {u:2,q:"Which intervention area focuses on smart cities and public transport?",opts:["Economic","Social","Environmental","Cultural"],a:0},
+  {u:2,q:"Environmental intervention for biodiversity:",opts:["Protected areas and reforestation","Vocational training programs","Green urban planning","Sustainable business practices"],a:0},
+  {u:2,q:"Key feature of effective sustainability indicators:",opts:["SMART","Expensive","Subjective","Arbitrary"],a:0},
+  {u:2,q:"Which stage has the highest carbon footprint in manufacturing?",opts:["Raw material extraction","Packaging","Transport","Disposal"],a:0},
+  {u:2,q:"Which is a regional environmental issue?",opts:["Air pollution from industries","Global warming","Urban heat islands","Deforestation in the Amazon"],a:0},
+  {u:2,q:"Linking indicators to intervention areas helps to:",opts:["Ensure data-driven decision-making","Maximize profits only","Reduce literacy rates","Ignore climate issues"],a:0},
+  {u:2,q:"The Montreal Protocol aims to protect:",opts:["Ozone layer","Forests","Oceans","Air pollution control"],a:0},
+  {u:2,q:"The Kyoto Protocol focuses on reducing:",opts:["Greenhouse gases","Deforestation","Acid rain","Nuclear waste"],a:0},
+  {u:2,q:"The Paris Agreement seeks to limit global temperature rise to below:",opts:["2°C","3°C","4°C","5°C"],a:0},
+  {u:2,q:"The Basel Convention deals with:",opts:["Control of hazardous waste movement","Forest management","Air quality improvement","Water conservation"],a:0},
+  {u:2,q:"The Nagoya Protocol is associated with:",opts:["Access to genetic resources and benefit sharing","Air pollution control","Carbon trading","Protection of marine life"],a:0},
+  {u:2,q:"Which protocol focuses on biosafety with genetically modified organisms?",opts:["Cartagena Protocol","Kyoto Protocol","Montreal Protocol","Nagoya Protocol"],a:0},
+  {u:2,q:"The Gothenburg Protocol aims to control:",opts:["Air pollutants like sulfur and nitrogen oxides","Marine pollution","Plastic waste","Deforestation"],a:0},
+  {u:2,q:"Which year was the Montreal Protocol signed?",opts:["1987","1985","1990","1992"],a:0},
+  {u:2,q:"The main GHG from agriculture is:",opts:["Methane","CO2","Nitrous oxide","Ozone"],a:0},
+  {u:2,q:"The Kyoto Protocol introduced the concept of:",opts:["Carbon credit trading","Sustainable cities","Forest replanting programs","Ocean clean-up"],a:0},
+  {u:2,q:"Which statement about the Paris Agreement is TRUE?",opts:["It allows countries to set their own climate action plans (NDCs)","It replaced the Montreal Protocol","It sets legally binding targets for all countries","It only applies to developed nations"],a:0},
+  {u:2,q:"Climate change refers to:",opts:["Long-term alteration in temperature and weather patterns","Short-term changes in weather","Sudden natural disasters","Temporary climatic fluctuations"],a:0},
+  {u:2,q:"Which is a major greenhouse gas?",opts:["Carbon dioxide","Oxygen","Nitrogen","Argon"],a:0},
+  {u:2,q:"Since pre-industrial era, global average temperature has risen by approximately:",opts:["1.1°C","0.5°C","2.5°C","3°C"],a:0},
+  {u:2,q:"Melting of glaciers mainly contributes to:",opts:["Sea level rise","Increased rainfall","More snowfall","Ozone depletion"],a:0},
+  {u:2,q:"Ocean acidification occurs primarily because:",opts:["Oceans absorb excess CO2","Pollution from plastic waste","Oil spills","Temperature drop in oceans"],a:0},
+  {u:2,q:"Which island nations are most threatened by rising sea levels?",opts:["Maldives and Tuvalu","Japan and Taiwan","Sri Lanka and Cuba","Indonesia and Philippines"],a:0},
+  {u:2,q:"The Paris Agreement (2015) aims to limit global warming to:",opts:["Below 2°C, preferably 1.5°C","Below 3°C","Below 4°C","Exactly 2°C"],a:0},
+  {u:2,q:"The REDD+ program focuses on:",opts:["Forest protection and reducing deforestation","Plastic waste management","Ocean cleanup projects","Carbon trading in industries"],a:0},
+  {u:2,q:"Carbon neutrality means:",opts:["Balancing emitted and absorbed CO2","Zero energy use","Only solar energy","Avoiding trees"],a:0},
+  {u:2,q:"The Cyclone Amphan (2020) primarily affected:",opts:["India and Bangladesh","South America","North Africa","Western Europe"],a:0},
+  {u:2,q:"The 'Great Green Wall' initiative in Africa is meant to:",opts:["Combat desertification","Stop deforestation","Build flood barriers","Protect wildlife sanctuaries"],a:0},
+  {u:2,q:"Ethiopia's 2019 reforestation campaign is notable for:",opts:["Planting 350 million trees in one day","Reducing industrial pollution","Creating new lakes","Building wind farms"],a:0},
+  {u:2,q:"The European Green Deal aims to make Europe:",opts:["Carbon neutral by 2050","Plastic-free by 2030","Fully industrialized by 2040","Deforestation-free by 2025"],a:0},
+  {u:2,q:"The Netherlands Adaptation Model is famous for:",opts:["Sea-level management using dikes and floating houses","Desert agriculture","Air pollution control","Recycling wastewater"],a:0},
+  {u:2,q:"Urban Heat Island Effect is caused by:",opts:["High concentration of buildings and concrete","Excess greenery in cities","Low energy consumption","Frequent rainfall"],a:0},
+  {u:2,q:"The Chennai Rainwater Harvesting Mandate is an example of:",opts:["Groundwater recharge initiative","Industrial pollution control","Air quality monitoring","Coastal zone management"],a:0},
+  {u:2,q:"Delhi's Odd-Even Vehicle Scheme was introduced to:",opts:["Reduce air pollution and traffic congestion","Control population","Increase road safety","Promote electric vehicles"],a:0},
+  {u:2,q:"Indore Smart City became India's cleanest city due to:",opts:["Waste segregation and community participation","Industrial development","Large-scale deforestation","Population control measures"],a:0},
+  {u:2,q:"A key local solution to urban flooding is:",opts:["Green urban planning and rainwater harvesting","Using plastic bags","Constructing more concrete roads","Expanding landfills"],a:0},
+  {u:2,q:"The three main aspects of sustainability are:",opts:["Environmental, social, economic","Political, cultural, ecological","Financial, agricultural, cultural","Scientific, ecological, spiritual"],a:0},
+  {u:2,q:"Which SDG relates to Responsible Consumption and Production?",opts:["SDG 12","SDG 10","SDG 11","SDG 13"],a:0},
+  {u:2,q:"A carbon footprint measures total amount of which gases?",opts:["Greenhouse gases","Nitrogen gases","Oxygen","Helium"],a:0},
+  {u:2,q:"The unit of measurement for a carbon footprint is:",opts:["Metric ton of CO2 equivalent","Kilogram of sulfur dioxide","Kilowatt-hour","Parts per million"],a:0},
+  {u:2,q:"The primary carbon footprint includes emissions from:",opts:["Travel and energy use","Food packaging","Imported goods","Agricultural waste only"],a:0},
+  {u:2,q:"The secondary carbon footprint refers to:",opts:["Indirect emissions from goods and services","Direct emissions from transport","Soil carbon absorption","Industrial waste disposal"],a:0},
+  {u:2,q:"Which activity increases the carbon footprint?",opts:["Burning fossil fuels","Using public transport","Recycling waste","Installing solar panels"],a:0},
+  {u:2,q:"The major GHG responsible for climate change is:",opts:["Carbon dioxide","Nitrogen","Hydrogen","Argon"],a:0},
+  {u:2,q:"Deforestation increases carbon footprint because:",opts:["It reduces carbon absorption by trees","It increases oxygen levels","It increases rainfall","It produces methane only"],a:0},
+  {u:2,q:"A carbon credit represents the right to emit:",opts:["1 metric ton of CO2","1 kilogram of CO2","100 kilograms of CO2","10 metric tons of CO2"],a:0},
+  {u:2,q:"The main goal of the carbon credit system is to:",opts:["Reduce greenhouse gas emissions","Encourage deforestation","Increase industrial growth only","Promote fossil fuel use"],a:0},
+  {u:2,q:"The Kyoto Protocol introduced:",opts:["Emission trading and carbon credits","Biodiversity conservation","Plastic waste management","Ozone layer recovery"],a:0},
+  {u:2,q:"Blue water in water footprint means:",opts:["Surface and groundwater","Rainwater","Polluted water","Desalinated water"],a:0},
+  {u:2,q:"Example of a carbon credit project:",opts:["Solar power plant","Coal mining","Deforestation","Oil drilling"],a:0},
+  {u:2,q:"If a company emits less than its quota, it can:",opts:["Sell the extra credits","Discard the unused credits","Increase emissions freely","Pay more taxes"],a:0},
+  {u:2,q:"The voluntary carbon market involves:",opts:["Self-motivated emission offsetting","Legal obligations","Government-mandated trading","Forest cutting permits"],a:0},
+  {u:2,q:"Which reduces a person's carbon footprint?",opts:["Using renewable energy","Driving petrol vehicles","Air travel","Buying imported goods frequently"],a:0},
+  {u:2,q:"The term 'carbon neutral' refers to:",opts:["Balancing emitted and offset carbon","Increasing emissions steadily","Reducing water pollution","Producing zero waste"],a:0},
+  {u:2,q:"Which gas is NOT a greenhouse gas?",opts:["Helium","Carbon dioxide","Methane","Nitrous oxide"],a:0},
+  {u:2,q:"The Paris Agreement primarily focuses on:",opts:["Limiting global temperature rise","Biodiversity protection","Promoting fossil fuel use","Plastic recycling"],a:0},
+  {u:2,q:"The carbon trading system provides:",opts:["Financial incentive to reduce emissions","Punishment for all industries","Free market for fossil fuels","Ban on renewable energy"],a:0},
+  {u:2,q:"One effective way for industries to earn carbon credits:",opts:["Switch to renewable energy sources","Increase production waste","Burn more coal","Ignore emission limits"],a:0},
+  {u:2,q:"Who introduced the concept of 'Water Footprint'?",opts:["Arjen Hoekstra","Peter Gleick","Rachel Carson","Vandana Shiva"],a:0},
+  {u:2,q:"Which industry is the largest CO2 emitter?",opts:["Energy sector","Transport","Agriculture","Tourism"],a:0},
+  {u:2,q:"Which ISO standard deals with water footprint assessment?",opts:["ISO 14046","ISO 14001","ISO 9001","ISO 50001"],a:0},
+  {u:2,q:"Which component of water footprint refers to freshwater from rivers, lakes, or groundwater?",opts:["Blue WF","Green WF","Grey WF","Black WF"],a:0},
+  {u:2,q:"Which industry is considered most water-intensive?",opts:["Textile","Automobile","IT Industry","Electronics"],a:0},
+  {u:2,q:"Approximate liters of water required to produce 1 kg of cotton:",opts:["10,000 liters","1,000 liters","2,700 liters","100 liters"],a:0},
+  {u:2,q:"Average water footprint of a cotton T-shirt:",opts:["2,700 liters","100 liters","500 liters","10,000 liters"],a:0},
+  {u:2,q:"In textile industry, most water consumption occurs during:",opts:["Dyeing","Spinning","Packaging","Transport"],a:0},
+  {u:2,q:"Advanced technology to reduce water consumption in dyeing:",opts:["Supercritical CO2 Dyeing","UV Curing","Laser Cutting","Ultrasonic Cleaning"],a:0},
+  {u:2,q:"Zero Liquid Discharge (ZLD) system mainly aims at:",opts:["Recycling all wastewater","Reducing carbon emissions","Eliminating solid waste","Rainwater harvesting"],a:0},
+  {u:2,q:"Which is a certification for sustainable textiles?",opts:["GOTS","LEED","Higg Index","BREEAM"],a:0},
+  {u:2,q:"Which company adopted a 'Water Neutrality' initiative?",opts:["Coca-Cola","PepsiCo","Nestlé","Unilever"],a:0},
+  {u:2,q:"ISO 14001 is related to:",opts:["Environmental management","Product safety","Profit maximization","Food quality"],a:0},
+  {u:2,q:"The industry with highest grey water footprint due to bleaching agents:",opts:["Paper and Pulp","Cement","Textile","Steel"],a:0},
+  {u:2,q:"In power plants, which process consumes the maximum water?",opts:["Cooling","Coal handling","Turbine operation","Ash disposal"],a:0},
+  {u:2,q:"Technology to reduce water use in thermal power plants:",opts:["Dry cooling","Wet scrubbers","Gasification","Solar panels"],a:0},
+  {u:2,q:"Which is NOT a challenge in water footprint implementation?",opts:["Abundant global water supply","Lack of data","Regional differences in water availability","High cost of treatment"],a:0},
+  {u:2,q:"Main environmental benefit of assessing water footprint:",opts:["Identifies water use hotspots","Reduces noise pollution","Improves biodiversity directly","Increases energy efficiency"],a:0},
+  {u:2,q:"Which component of water footprint is dominant in cotton cultivation?",opts:["Green WF","Grey WF","Blue WF","Black WF"],a:0},
+  {u:2,q:"Which index measures sustainability performance in textiles?",opts:["Higg Index","CPI","PMI","Ecological Index"],a:0},
+  {u:2,q:"The Clean Development Mechanism (CDM) is linked to:",opts:["Kyoto Protocol","Paris Agreement","Montreal Protocol","Doha Amendment"],a:0},
+  {u:2,q:"Assertion: Paris Agreement is legally binding. Reason: Countries must follow strict international targets.",opts:["A true, R false","Both true","A false, R true","Both false"],a:0},
+  {u:2,q:"If a factory emits 500 tonnes CO2 and offsets 600 tonnes via afforestation, it is:",opts:["Carbon negative","Neutral","Positive","None"],a:0},
+  {u:2,q:"Grey water in footprint means:",opts:["Water needed to dilute pollutants","Household wastewater","Irrigation water","Rainwater"],a:0},
+  {u:2,q:"Assertion: EVs have zero carbon footprint. Reason: They produce no tailpipe emissions.",opts:["A true, R false","A false, R true","Both true","Both false"],a:0},
+  {u:2,q:"Circular economy promotes:",opts:["Reuse, recycling, repair","More mining","Single-use plastics","Export growth"],a:0},
+  {u:2,q:"How many Sustainable Development Goals (SDGs) are there?",opts:["17","15","16","18"],a:0},
+  {u:2,q:"Main challenge in SDG 6 for developing nations:",opts:["Water scarcity","Excess rainfall","Overpopulation","High literacy"],a:0},
+  {u:2,q:"The precautionary principle means:",opts:["Act without full certainty to prevent harm","Wait for proof","Reduce costs first","Follow only rules"],a:0},
+  {u:2,q:"Largest contributor to global warming is:",opts:["Carbon dioxide","Ozone","Nitrous oxide","Hydrogen"],a:0},
+  {u:2,q:"Assertion: Poverty eradication is essential for sustainability. Reason: SDG 1 is No Poverty.",opts:["Both true, R is correct explanation","Both true, not explanation","A true, R false","A false, R true"],a:0},
+  {u:2,q:"Carbon trading may fail because:",opts:["Can be misused for greenwashing","Encourages innovation","Promotes renewable energy","Encourages afforestation"],a:0},
+  {u:2,q:"Ecological footprint measures:",opts:["Land required to sustain consumption","Pollution","Water use","Air emissions"],a:0},
+  {u:2,q:"Which SDG ensures 'Life on Land'?",opts:["SDG 15","SDG 13","SDG 14","SDG 16"],a:0},
+  {u:2,q:"Industrial case studies of sustainability highlight:",opts:["Cleaner production and waste minimization","Profit-only models","More exports","Energy-intensive growth"],a:0},
+  {u:2,q:"One carbon credit equals reduction of:",opts:["1 tonne CO2","1 kg CO2","100 g CO2","100 tonnes CO2"],a:0},
+  {u:2,q:"Which gas has highest Global Warming Potential?",opts:["SF6 (Sulfur hexafluoride)","CO2","Methane","N2O"],a:0},
+  {u:2,q:"SDG 13 deals with:",opts:["Climate action","Clean water","Gender equality","Life on Land"],a:0},
+  {u:2,q:"Green buildings contribute to sustainability by:",opts:["Reducing energy and water consumption","Using more steel","Eliminating vegetation","Reducing costs only"],a:0},
+  {u:2,q:"Environmental management systems in industries aim at:",opts:["Pollution prevention","Worker reduction","Export promotion","Profit maximization"],a:0},
+  {u:2,q:"Assertion: Recycling reduces resource depletion. Reason: It increases landfill waste.",opts:["A true, R false","Both true","Both false","A false, R true"],a:0},
+  {u:2,q:"Which SDG relates to 'Zero Hunger'?",opts:["SDG 2","SDG 3","SDG 4","SDG 5"],a:0},
+  {u:2,q:"Which is NOT a renewable energy source?",opts:["Natural gas","Hydro","Wind","Biomass"],a:0},
+  {u:2,q:"The 'Polluter Pays' principle means:",opts:["Polluters bear cost of cleanup","Subsidy for polluters","Victims bear costs","Government funds cleanup"],a:0},
+  {u:2,q:"Which SDG targets gender equality?",opts:["SDG 5","SDG 3","SDG 4","SDG 6"],a:0},
+  {u:2,q:"Ozone depletion is mainly caused by:",opts:["CFCs","CO2","Methane","Dust"],a:0},
+  {u:2,q:"Assertion: Climate change is purely natural. Reason: Human activity does not impact climate.",opts:["Both false","A false, R true","Both true","A true, R false"],a:0},
+  {u:2,q:"Which industries commonly generate Carbon Credits through CDM in India?",opts:["Renewable Energy Projects","IT Sector","Textile Sector","Automobile Industry"],a:0},
+  {u:2,q:"The Montreal Protocol is related to:",opts:["Ozone layer protection","Carbon credits","Climate change","Solid waste management"],a:0},
+  {u:2,q:"ISO 14000 standards are developed by:",opts:["International Organization for Standardization (ISO)","United Nations","World Trade Organization","World Bank"],a:0},
+  {u:2,q:"Carbon credit is earned by:",opts:["Reducing greenhouse gas emissions","Using more fossil fuels","Increasing industrial waste","Importing resources"],a:0},
+  {u:2,q:"The Millennium Development Goals (MDGs) were adopted in:",opts:["2000","1992","2010","2015"],a:0},
+  {u:2,q:"How many goals were in the Millennium Development Goals?",opts:["8","10","12","15"],a:0},
+  {u:2,q:"Primary objective of MDGs was to reduce:",opts:["Global poverty","Industrial pollution","Carbon emissions","Population growth"],a:0},
+  {u:2,q:"The MDGs were succeeded by:",opts:["Sustainable Development Goals (SDGs)","Paris Climate Agreement","Kyoto Protocol","Green Economy Initiative"],a:0},
+  {u:2,q:"Main international standard for Environmental Management Systems:",opts:["ISO 14001","ISO 9001","ISO 45001","ISO 50001"],a:0},
+  {u:2,q:"Primary purpose of an Environmental Management System:",opts:["Improve environmental performance","Increase production speed","Reduce employee turnover","Enhance marketing strategy"],a:0},
+  {u:2,q:"The PDCA cycle is associated with:",opts:["Continuous improvement in EMS","Wastewater treatment","Hazard identification","Energy audits"],a:0},
+  {u:2,q:"In an EMS, environmental policy is usually:",opts:["A statement of the organization's commitment to the environment","A financial target","A safety regulation","A marketing plan"],a:0},
+  {u:2,q:"What does 'water footprint' primarily measure?",opts:["Total volume of freshwater used directly and indirectly","Amount of wastewater generated","Water pollution index","Energy footprint"],a:0},
+  {u:2,q:"Which component of water footprint refers to rainwater consumed in production?",opts:["Green water footprint","Blue water footprint","Grey water footprint","Black water footprint"],a:0},
+  {u:2,q:"The Brundtland Commission Report (1987) is famous for:",opts:["Defining sustainable development","SDG targets","Environmental accounting","Carbon footprint analysis"],a:0},
+  {u:2,q:"Which sector generally has the largest water footprint globally?",opts:["Agriculture sector","Transport sector","Service sector","Industrial sector"],a:0},
+  {u:2,q:"The 'blue water footprint' refers to:",opts:["Surface and groundwater used for production","Rainwater used for crops","Wastewater used for irrigation","Recycled water usage"],a:0},
+  {u:2,q:"The 'grey water footprint' represents:",opts:["Volume of freshwater required to assimilate pollutants","Amount of rainwater used for crops","Recycled water volume used in industry","Water used for cooling systems"],a:0},
+  {u:2,q:"The total water footprint of a product includes:",opts:["Green, blue, and grey water components","Only blue water","Only grey water","Only groundwater"],a:0},
+  {u:2,q:"Virtual water refers to:",opts:["Hidden flow of water used in producing goods","Water stored in virtual databases","Recycled wastewater","Surface water stored in dams"],a:0},
+  {u:2,q:"Reducing water footprint in agriculture can be achieved by:",opts:["Drip irrigation and crop selection","Increasing fertilizer use","Expanding irrigation areas","Pumping more groundwater"],a:0},
+  {u:2,q:"Which organization publishes global water footprint assessment reports?",opts:["Water Footprint Network","World Bank","UNFCCC","UNEP"],a:0},
+  {u:2,q:"Carbon footprint primarily measures:",opts:["Total GHG emissions caused directly and indirectly","Only CO2 in the atmosphere","Energy consumption of a household","Water usage in production"],a:0},
+  {u:2,q:"Which contributes most to an individual's carbon footprint?",opts:["Transportation (cars, planes)","Wearing clothes","Watching TV","Using smartphones"],a:0},
+  {u:2,q:"Which gases are included in carbon footprint calculation?",opts:["CO2, CH4, N2O, and other GHGs","Oxygen and nitrogen","Hydrogen and helium","Only CO2"],a:0},
+  {u:2,q:"The Paris Agreement was signed in:",opts:["2015","2016","1987","1992"],a:0},
+  {u:2,q:"Reducing carbon footprint can be achieved by:",opts:["Using renewable energy and energy-efficient appliances","Increasing meat consumption","Burning fossil fuels","Deforestation"],a:0},
+  {u:2,q:"What is a carbon credit?",opts:["A permit allowing emission of a certain amount of CO2 equivalent","A tax on renewable energy","A certificate for water usage","A permit for deforestation"],a:0},
+  {u:2,q:"Carbon credits are mainly traded under:",opts:["Cap-and-trade system","Free market energy exchange","Water conservation market","Biodiversity offset system"],a:0},
+  {u:2,q:"The purpose of carbon credits is to:",opts:["Encourage reduction of greenhouse gas emissions","Increase industrial production","Promote deforestation","Reduce water usage"],a:0},
+  {u:2,q:"Which is NOT an SDG?",opts:["Space exploration for all","No poverty","Gender equality","Life on land"],a:0},
+  {u:2,q:"The 'Polluter Pays Principle' was first articulated in:",opts:["OECD guidelines","Rio Declaration","Paris Agreement","Kyoto Protocol"],a:0},
+  {u:2,q:"The main cause of climate change is:",opts:["Increase in GHG emissions due to human activity","Rotation of Earth","Plate tectonics","Solar eclipses"],a:0},
+  {u:2,q:"Example of a successful EMS case study in India:",opts:["Patancheru effluent treatment initiative","Dust Bowl management","Exxon Valdez oil spill","Chernobyl recovery"],a:0},
+  {u:2,q:"Which SDG promotes 'Decent Work and Economic Growth'?",opts:["SDG 8","SDG 9","SDG 10","SDG 7"],a:0},
+  {u:2,q:"The 2030 Agenda for Sustainable Development was adopted by:",opts:["United Nations","World Bank","IMF","WTO"],a:0},
+  {u:2,q:"The water footprint measures:",opts:["Total freshwater consumed directly and indirectly","Only industrial water use","Rainwater alone","Ocean water level"],a:0},
+  {u:2,q:"A major goal of industrial ecology is:",opts:["Waste from one process becomes input for another","Maximize extraction","Promote landfills","Focus on energy exports"],a:0},
+  {u:2,q:"In environmental management, 'EMS' stands for:",opts:["Environmental Management System","Environmental Mapping Survey","Energy Management Setup","Environmental Monitoring Station"],a:0},
+  {u:2,q:"A company calculating its 'Scope 3 emissions' is focusing on:",opts:["Indirect emissions from supply chains","Emissions from renewable sources","Direct emissions from its own processes","Vehicle emissions only"],a:0},
+  {u:2,q:"Which SDG emphasizes partnerships to achieve the goals?",opts:["SDG 17","SDG 12","SDG 11","SDG 13"],a:0},
+  {u:2,q:"The Global Reporting Initiative (GRI) is associated with:",opts:["Sustainability reporting standards","Carbon credit trading","Ozone monitoring","Fossil fuel exploration"],a:0},
+  {u:2,q:"Example of local-level sustainability initiative:",opts:["Community-based rainwater harvesting","UNFCCC meetings","Paris Agreement","G7 Summit"],a:0},
+  {u:2,q:"Who introduced the widely accepted definition of sustainable development?",opts:["Brundtland Commission","UNFCCC","IPCC","UNEP"],a:0},
+  {u:2,q:"Sustainability is based on how many main pillars?",opts:["Three","Two","Four","Five"],a:0},
+  {u:2,q:"Which is NOT a pillar of sustainability?",opts:["Politics","Environment","Economy","Society"],a:0},
+  {u:2,q:"The goal of sustainability is to maintain balance among:",opts:["People, Planet, and Profit","Power, Politics, and Population","Production, Policy, and Price","Energy, Economy, and Ecology"],a:0}
+];
 
-/* ================== SHUFFLE ================== */
-function shuffle(arr){
-  return arr.map(v=>({v,r:Math.random()}))
-            .sort((a,b)=>a.r-b.r)
-            .map(x=>x.v);
-}
+const LETTERS = ['A','B','C','D'];
+const TOTAL_SECS = 3600;
 
-/* ================== PREPARE ================== */
-function prepareQuestions(raw){
-  return shuffle(raw).map(q=>{
-    const correct = q.opts[q.a];
-    const shuffled = shuffle(q.opts);
+let playerName='', questions=[], answers={}, currentIdx=0;
+let timerInterval=null, secondsLeft=TOTAL_SECS, startTime=null;
+let quizSubmitted=false, reviewVisible=false;
+let liveCorrect=0, liveWrong=0;
 
-    return {
-      ...q,
-      opts: shuffled,
-      answer: correct
-    };
-  });
-}
+// Stars
+(function(){
+  const c=document.getElementById('stars');
+  for(let i=0;i<160;i++){
+    const s=document.createElement('div');s.className='star';
+    const sz=Math.random()*2.5+.5;
+    s.style.cssText=`width:${sz}px;height:${sz}px;top:${Math.random()*100}%;left:${Math.random()*100}%;--d:${(Math.random()*4+2).toFixed(1)}s;animation-delay:${(Math.random()*5).toFixed(1)}s`;
+    c.appendChild(s);
+  }
+})();
 
-/* ================== USE YOUR ORIGINAL DATA ================== */
-/* IMPORTANT: this uses YOUR existing ALL_QUESTIONS from your file */
-const QUESTIONS = prepareQuestions(ALL_QUESTIONS);
+function shuffle(arr){const a=[...arr];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
 
-/* ================== STATE ================== */
-let currentQ = 0;
-let correct = 0;
-let wrong = 0;
+document.getElementById('nameInput').addEventListener('keydown',e=>{if(e.key==='Enter')startQuiz();});
 
-/* ================== START ================== */
-document.getElementById("btn-start").onclick = () => {
-  const name = document.getElementById("player-name").value.trim();
-
-  if(!name){
-    document.getElementById("name-err").innerText = "Enter your name";
+function startQuiz(){
+  const n=document.getElementById('nameInput').value.trim();
+  if(!n){
+    document.getElementById('nameInput').style.borderColor='var(--accent2)';
+    document.getElementById('nameInput').placeholder='⚠️ Please enter your name!';
+    setTimeout(()=>{document.getElementById('nameInput').style.borderColor='';document.getElementById('nameInput').placeholder='Your full name…';},1500);
     return;
   }
+  playerName=n;
+  questions=shuffle(ALL_QUESTIONS).map(q=>{
+    const ca=q.opts[q.a];
+    const so=shuffle(q.opts);
+    return {u:q.u,q:q.q,opts:so,a:so.indexOf(ca)};
+  });
+  answers={};currentIdx=0;secondsLeft=TOTAL_SECS;quizSubmitted=false;reviewVisible=false;liveCorrect=0;liveWrong=0;
 
-  document.getElementById("screen-landing").style.display = "none";
-  document.getElementById("screen-quiz").style.display = "block";
+  document.getElementById('screen-landing').style.display='none';
+  document.getElementById('screen-result').style.display='none';
+  document.getElementById('screen-quiz').style.display='block';
+  document.getElementById('hudName').textContent=playerName;
+  document.getElementById('avatarInitial').textContent=playerName[0].toUpperCase();
 
-  loadQuestion();
-};
+  startTime=Date.now();
+  clearInterval(timerInterval);
+  timerInterval=setInterval(()=>{
+    secondsLeft--;
+    updateTimerUI();
+    if(secondsLeft<=0){clearInterval(timerInterval);submitQuiz();}
+  },1000);
+  renderQuestion();
+}
 
-/* ================== LOAD QUESTION ================== */
-function loadQuestion(){
-  const q = QUESTIONS[currentQ];
+function updateTimerUI(){
+  const m=Math.floor(secondsLeft/60),s=secondsLeft%60;
+  document.getElementById('timerVal').textContent=`${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+  const tb=document.getElementById('timerBox');
+  if(secondsLeft<=120)tb.classList.add('warn');else tb.classList.remove('warn');
+}
 
-  document.getElementById("q-text").innerText = q.q;
-  document.getElementById("options-grid").innerHTML = "";
-  document.getElementById("btn-next").disabled = true;
-  document.getElementById("q-answered").innerHTML = "";
+function getTopicLabel(u){return u===1?'Unit 1 — Energy Resources':'Unit 2 — Sustainability & SDGs';}
 
-  document.getElementById("prog-label").innerText =
-    `Question ${currentQ + 1} of ${QUESTIONS.length}`;
+function renderQuestion(){
+  const q=questions[currentIdx];
+  const card=document.getElementById('qCard');
+  card.style.animation='none';void card.offsetWidth;card.style.animation='slideIn .4s cubic-bezier(.22,1,.36,1) forwards';
 
-  document.getElementById("prog-fill").style.width =
-    ((currentQ + 1) / QUESTIONS.length) * 100 + "%";
+  document.getElementById('qTopic').textContent=getTopicLabel(q.u);
+  document.getElementById('qNumBadge').textContent=`Q${currentIdx+1}`;
+  document.getElementById('qText').textContent=q.q;
+  document.getElementById('curQNum').textContent=currentIdx+1;
+  document.getElementById('hudCorrect').textContent=liveCorrect;
+  document.getElementById('hudWrong').textContent=liveWrong;
 
-  document.getElementById("q-counter").innerHTML =
-    `✓ ${correct} &nbsp; ✗ ${wrong}`;
+  const answered=Object.keys(answers).length;
+  const pct=Math.round(answered/questions.length*100);
+  document.getElementById('progFill').style.width=pct+'%';
+  document.getElementById('progText').textContent=`${answered}/${questions.length}`;
 
-  q.opts.forEach((opt, i)=>{
-    const btn = document.createElement("button");
-    btn.className = "opt-btn";
+  document.getElementById('feedbackLabel').innerHTML='';
 
-    btn.innerHTML = `
-      <div class="opt-letter">${String.fromCharCode(65 + i)}</div>
-      ${opt}
-    `;
+  const wrap=document.getElementById('optionsWrap');wrap.innerHTML='';
+  const alreadyAnswered=answers[currentIdx]!==undefined;
 
-    btn.onclick = ()=> checkAnswer(opt);
+  q.opts.forEach((opt,i)=>{
+    const btn=document.createElement('button');
+    btn.className='opt-btn';
+    btn.innerHTML=`<span class="opt-letter">${LETTERS[i]}</span><span>${opt}</span>`;
+    if(alreadyAnswered){
+      btn.disabled=true;
+      if(i===q.a)btn.classList.add('correct-ans');
+      else if(answers[currentIdx]===i&&i!==q.a)btn.classList.add('wrong-ans');
+    } else {
+      btn.onclick=()=>selectOption(i,btn,q);
+    }
+    wrap.appendChild(btn);
+  });
 
-    document.getElementById("options-grid").appendChild(btn);
+  if(alreadyAnswered)showFeedbackLabel(answers[currentIdx]===q.a);
+
+  document.getElementById('btnPrev').style.display=currentIdx===0?'none':'';
+  const isLast=currentIdx===questions.length-1;
+  document.getElementById('btnNext').style.display=isLast?'none':'';
+  document.getElementById('btnSubmit').style.display=isLast?'':'none';
+  document.getElementById('skipNote').textContent=alreadyAnswered?'':currentIdx<questions.length-1?'(You can skip & come back)':'';
+}
+
+function selectOption(idx,clickedBtn,q){
+  if(quizSubmitted||answers[currentIdx]!==undefined)return;
+  answers[currentIdx]=idx;
+  const isCorrect=idx===q.a;
+  if(isCorrect)liveCorrect++;else liveWrong++;
+
+  document.querySelectorAll('.opt-btn').forEach((btn,i)=>{
+    btn.disabled=true;btn.onclick=null;
+    if(i===q.a)btn.classList.add('correct-ans');
+    else if(btn===clickedBtn&&!isCorrect)btn.classList.add('wrong-ans');
+  });
+  showFeedbackLabel(isCorrect);
+
+  const answered=Object.keys(answers).length;
+  const pct=Math.round(answered/questions.length*100);
+  document.getElementById('progFill').style.width=pct+'%';
+  document.getElementById('progText').textContent=`${answered}/${questions.length}`;
+  document.getElementById('hudCorrect').textContent=liveCorrect;
+  document.getElementById('hudWrong').textContent=liveWrong;
+  document.getElementById('skipNote').textContent='';
+}
+
+function showFeedbackLabel(isCorrect){
+  document.getElementById('feedbackLabel').innerHTML=isCorrect
+    ?`<div class="feedback-label correct">✅ Correct!</div>`
+    :`<div class="feedback-label wrong">❌ Wrong Answer</div>`;
+}
+
+function navigate(dir){
+  const newIdx=currentIdx+dir;
+  if(newIdx>=0&&newIdx<questions.length){currentIdx=newIdx;renderQuestion();}
+}
+
+function showConfirm(){
+  const existing=document.getElementById('confirmOverlay');
+  if(existing)existing.remove();
+  const answered=Object.keys(answers).length;
+  const skipped=questions.length-answered;
+  const ov=document.createElement('div');
+  ov.className='confirm-overlay';ov.id='confirmOverlay';
+  ov.innerHTML=`<div class="confirm-box">
+    <h3>Submit Quiz?</h3>
+    <p>You answered <strong>${answered}</strong> of <strong>${questions.length}</strong> questions.<br>${skipped>0?`<span style="color:var(--red)">${skipped} question(s) will be skipped.</span>`:'All questions answered! 🎉'}</p>
+    <div class="confirm-btns">
+      <button class="cbtn-yes" id="cbtnYes">✅ Yes, Submit</button>
+      <button class="cbtn-no" id="cbtnNo">Cancel</button>
+    </div>
+  </div>`;
+  document.body.appendChild(ov);
+  document.getElementById('cbtnYes').onclick=submitQuiz;
+  document.getElementById('cbtnNo').onclick=()=>ov.remove();
+}
+
+function submitQuiz(){
+  const ov=document.getElementById('confirmOverlay');if(ov)ov.remove();
+  clearInterval(timerInterval);quizSubmitted=true;
+  const timeTaken=TOTAL_SECS-secondsLeft;
+  const tm=Math.floor(timeTaken/60),ts=timeTaken%60;
+
+  let correct=0,incorrect=0,skipped=0;
+  questions.forEach((q,i)=>{
+    if(answers[i]===undefined)skipped++;
+    else if(answers[i]===q.a)correct++;
+    else incorrect++;
+  });
+  const pct=Math.round(correct/questions.length*100);
+
+  document.getElementById('screen-quiz').style.display='none';
+  const rs=document.getElementById('screen-result');rs.style.display='block';
+
+  let trophy='😔',title='Keep Practicing!';
+  if(pct>=90){trophy='🏆';title='Outstanding Champion!';}
+  else if(pct>=75){trophy='🥇';title='Excellent Performance!';}
+  else if(pct>=60){trophy='🥈';title='Great Job!';}
+  else if(pct>=50){trophy='🥉';title='Good Effort!';}
+  document.getElementById('trophyEmoji').textContent=trophy;
+  document.getElementById('resultTitle').textContent=title;
+  document.getElementById('resultName').textContent=`${playerName} · ${correct}/${questions.length} Correct`;
+  document.getElementById('statCorrect').textContent=correct;
+  document.getElementById('statIncorrect').textContent=incorrect;
+  document.getElementById('statSkipped').textContent=skipped;
+  document.getElementById('statTimeTaken').textContent=`${String(tm).padStart(2,'0')}:${String(ts).padStart(2,'0')}`;
+  document.getElementById('scorePct').textContent=pct+'%';
+
+  const ringFill=document.getElementById('ringFill');
+  const color=pct>=75?'var(--green)':pct>=50?'var(--gold)':'var(--red)';
+  ringFill.style.stroke=color;
+  document.getElementById('scorePct').style.color=color;
+  setTimeout(()=>{const c=477.5;ringFill.style.strokeDashoffset=c-(c*pct/100);},200);
+
+  if(pct>=60)launchConfetti();
+  buildReview();
+  rs.scrollIntoView({behavior:'smooth'});
+}
+
+function buildReview(){
+  const list=document.getElementById('reviewList');list.innerHTML='';
+  questions.forEach((q,i)=>{
+    const user=answers[i];
+    const isCorrect=user===q.a;
+    const isSkipped=user===undefined;
+    const cls=isSkipped?'skipped':isCorrect?'correct':'incorrect';
+    const item=document.createElement('div');
+    item.className=`review-item ${cls}`;
+    let optHtml='';
+    q.opts.forEach((opt,oi)=>{
+      let ra='neutral',icon='⬜';
+      if(oi===q.a){ra='correct-ans-r';icon='✅';}
+      if(user!==undefined&&user===oi&&oi!==q.a){ra='your-wrong';icon='❌';}
+      if(user!==undefined&&user===oi&&oi===q.a){ra='your-correct';icon='✅';}
+      optHtml+=`<div class="ra ${ra}"><span>${icon}</span><span>${opt}</span></div>`;
+    });
+    if(isSkipped)optHtml+=`<div class="ra" style="color:var(--gold);background:rgba(255,214,10,.07)"><span>⏭️</span><span>Not answered — Correct: ${q.opts[q.a]}</span></div>`;
+    item.innerHTML=`<div class="review-q"><span class="ri-num">Q${i+1} · ${getTopicLabel(q.u)}</span>${q.q}</div><div class="review-answers">${optHtml}</div>`;
+    list.appendChild(item);
   });
 }
 
-/* ================== CHECK ANSWER ================== */
-function checkAnswer(selected){
-  const q = QUESTIONS[currentQ];
-  const buttons = document.querySelectorAll(".opt-btn");
-
-  buttons.forEach(btn=>{
-    btn.disabled = true;
-
-    const text = btn.innerText.slice(2).trim();
-
-    if(text === q.answer){
-      btn.classList.add("correct");
-    }
-
-    if(text === selected && text !== q.answer){
-      btn.classList.add("wrong");
-    }
-  });
-
-  if(selected === q.answer){
-    correct++;
-    document.getElementById("q-answered").innerHTML = "✅ Correct!";
-  } else {
-    wrong++;
-    document.getElementById("q-answered").innerHTML =
-      `❌ Wrong! Correct: <b>${q.answer}</b>`;
-  }
-
-  document.getElementById("q-counter").innerHTML =
-    `✓ ${correct} &nbsp; ✗ ${wrong}`;
-
-  document.getElementById("btn-next").disabled = false;
+function toggleReview(){
+  reviewVisible=!reviewVisible;
+  const s=document.getElementById('reviewSection');
+  s.style.display=reviewVisible?'block':'none';
+  document.querySelector('.btn-review').textContent=reviewVisible?'🔼 Hide Review':'📖 Review Answers';
+  if(reviewVisible)s.scrollIntoView({behavior:'smooth'});
 }
 
-/* ================== NEXT ================== */
-document.getElementById("btn-next").onclick = ()=>{
-  currentQ++;
-
-  if(currentQ < QUESTIONS.length){
-    loadQuestion();
-  } else {
-    showResult();
-  }
-};
-
-/* ================== RESULT ================== */
-function showResult(){
-  document.getElementById("screen-quiz").style.display = "none";
-  document.getElementById("screen-result").style.display = "block";
-
-  document.getElementById("r-score").innerText = correct;
-  document.getElementById("r-total").innerText =
-    `out of ${QUESTIONS.length} correct`;
-
-  document.getElementById("r-correct").innerText = correct;
-  document.getElementById("r-wrong").innerText = wrong;
-
-  const pct = Math.round((correct / QUESTIONS.length) * 100);
-  document.getElementById("r-pct").innerText = pct + "%";
-
-  let msg = "Good try!";
-  if (pct > 80) msg = "🔥 Excellent!";
-  else if (pct > 60) msg = "👏 Well done!";
-  else if (pct > 40) msg = "👍 Not bad!";
-
-  document.getElementById("r-msg").innerText = msg;
+function retakeQuiz(){
+  document.getElementById('screen-result').style.display='none';
+  document.getElementById('screen-landing').style.display='flex';
+  document.getElementById('screen-landing').style.flexDirection='column';
+  document.getElementById('screen-landing').style.alignItems='center';
+  document.getElementById('nameInput').value=playerName;
+  startQuiz();
 }
 
-/* ================== RETAKE ================== */
-document.getElementById("btn-retake").onclick = ()=>{
-  location.reload();
-};
-
+function launchConfetti(){
+  const colors=['#00f5d4','#f72585','#7b2ff7','#ffd60a','#06d6a0','#ff9a00'];
+  for(let i=0;i<80;i++){
+    const el=document.createElement('div');el.className='confetti-piece';
+    el.style.cssText=`left:${Math.random()*100}vw;background:${colors[Math.floor(Math.random()*colors.length)]};--cf-dur:${(Math.random()*2+2).toFixed(1)}s;--cf-delay:${(Math.random()*1.5).toFixed(2)}s;width:${Math.random()*10+6}px;height:${Math.random()*10+6}px;border-radius:${Math.random()>.5?'50%':'3px'}`;
+    document.body.appendChild(el);
+    setTimeout(()=>el.remove(),5000);
+  }
+}
 </script>
+</body>
+</html>
