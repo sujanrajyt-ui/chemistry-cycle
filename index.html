@@ -31,6 +31,7 @@
   <button class="btn" data-subject="EV">EV</button>
   <button class="btn" data-subject="ESS">ESS</button>
   <button class="btn" data-subject="BIO">BIO</button>
+  <button class="btn" data-subject="ADLD">ADLD</button> <!-- ✅ ADDED -->
 </div>
 
 <div id="filesBox" class="files-box" style="display:none;"></div>
@@ -52,14 +53,21 @@ const supabase = createClient(
 
 const filesBox = document.getElementById('filesBox');
 
-/* NOTES */
+
+// ================= NOTES =================
 async function loadSubject(subject){
   filesBox.style.display = 'block';
   filesBox.innerHTML = `Loading ${subject}...`;
 
-  const { data } = await supabase.storage
+  const { data, error } = await supabase.storage
     .from('notes')
     .list(`chemistry_cycle/${subject}`);
+
+  if (error) {
+    filesBox.innerHTML = "Error loading files";
+    console.error(error);
+    return;
+  }
 
   if (!data || data.length === 0) {
     filesBox.innerHTML = "No files found";
@@ -69,48 +77,69 @@ async function loadSubject(subject){
   filesBox.innerHTML = `<h3>${subject} Notes</h3>`;
 
   for (const file of data) {
-    const { data:urlData } = await supabase
+
+    // skip folders
+    if (file.name === '.emptyFolderPlaceholder') continue;
+
+    const { data:urlData, error:urlError } = await supabase
       .storage
       .from('notes')
       .createSignedUrl(`chemistry_cycle/${subject}/${file.name}`, 60);
+
+    if (urlError) {
+      console.error(urlError);
+      continue;
+    }
 
     filesBox.innerHTML += `
       <div class="file-item">
         <a href="${urlData.signedUrl}" target="_blank">
           ${file.name}
         </a>
-      </div>`;
+      </div>
+    `;
   }
 }
 
-/* LOAD QUIZ HTML */
+
+// ================= QUIZ =================
 async function loadQuizPage(file){
   filesBox.style.display = 'block';
   filesBox.innerHTML = "Loading quiz...";
 
-  const res = await fetch(file);
-  const html = await res.text();
+  try {
+    const res = await fetch(file);
+    const html = await res.text();
 
-  filesBox.innerHTML = html;
+    filesBox.innerHTML = html;
 
-  // execute scripts
-  filesBox.querySelectorAll("script").forEach(oldScript=>{
-    const s = document.createElement("script");
-    s.textContent = oldScript.textContent;
-    document.body.appendChild(s);
-  });
+    // run scripts inside quiz
+    filesBox.querySelectorAll("script").forEach(oldScript=>{
+      const s = document.createElement("script");
+      s.textContent = oldScript.textContent;
+      document.body.appendChild(s);
+    });
+
+  } catch(err){
+    filesBox.innerHTML = "Error loading quiz";
+    console.error(err);
+  }
 }
 
-/* ROUTER */
+
+// ================= ROUTER =================
 document.querySelectorAll('[data-subject]').forEach(btn=>{
   btn.onclick = ()=>{
     const s = btn.dataset.subject;
 
-    if(s==="ESS") loadQuizPage("ess.html");
-    else if(s==="BIO") loadQuizPage("bio.html");
+    if(s === "ESS") loadQuizPage("ess.html");
+    else if(s === "BIO") loadQuizPage("bio.html");
+    // 👉 if you ever make ADLD quiz, use this:
+    // else if(s === "ADLD") loadQuizPage("adld.html");
     else loadSubject(s);
   };
 });
+
 </script>
 
 </body>
