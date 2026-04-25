@@ -1,0 +1,9 @@
+{
+  "name": "chemistry-cycle",
+  "version": "1.0.0",
+  "description": "API Routes for Cloudinary",
+  "type": "module",
+  "dependencies": {
+    "cloudinary": "^2.1.0"
+  }
+}

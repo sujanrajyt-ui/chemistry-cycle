@@ -6,6 +6,32 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="stylesheet" href="style.css" />
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+/* Adjustments for manage section */
+.manage-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  border-bottom: 1px solid var(--glass-border);
+  background: white;
+}
+.manage-row:last-child { border-bottom: none; }
+.manage-name { font-weight: 600; color: var(--text-primary); cursor: pointer; text-decoration: none; }
+.manage-name:hover { text-decoration: underline; color: var(--primary); }
+.action-btn { 
+  background: #f87171; 
+  color: white; 
+  border: none; 
+  padding: 0.4rem 0.8rem; 
+  border-radius: 6px; 
+  cursor: pointer; 
+  font-weight: 600; 
+  font-size: 0.85rem;
+}
+.action-btn:hover { background: #ef4444; }
+.btn-small { padding: 0.5rem 1rem; margin-top: 0; width: auto; }
+</style>
 </head>
 
 <body>
@@ -41,10 +67,36 @@
     <label>File</label>
     <input id="file" type="file" required>
 
-    <button type="submit" class="admin-btn">Upload to Cloudinary</button>
+    <button type="submit" class="admin-btn">Upload to Database</button>
   </form>
 
   <div id="uploadStatus" class="status-msg" style="display:none;"></div>
+</div>
+
+<!-- MANAGE FILES -->
+<div class="admin-card">
+  <h2>Manage Files</h2>
+  
+  <div style="display:flex; gap:1rem; align-items:flex-end; margin-bottom: 1.5rem;">
+    <div style="flex:1;">
+      <label>Select Subject</label>
+      <select id="manageSubject" style="margin-bottom:0;">
+        <option value="IPP">IPP</option>
+        <option value="EEE">EEE</option>
+        <option value="MAT">MAT</option>
+        <option value="CHY">CHY</option>
+        <option value="EV">EV</option>
+        <option value="ESS">ESS</option>
+        <option value="BIO">BIO</option>
+        <option value="ADLD">ADLD</option>
+      </select>
+    </div>
+    <button id="loadBtn" class="admin-btn btn-small" style="background:var(--primary-hover);">Load Notes</button>
+  </div>
+
+  <div id="manageFilesBox" style="border: 1px solid #cbd5e1; border-radius: 8px; overflow: hidden;">
+    <div style="padding: 1rem; color: #64748b; font-size: 0.9rem; text-align: center;">Click "Load Notes" to manage files.</div>
+  </div>
 </div>
 
 </main>
@@ -54,31 +106,7 @@
 </footer>
 
 <script type="module">
-/* BASIC PROTECTION */
-const ADMIN_PASSWORD = "1234";
-if (prompt("Enter admin password") !== ADMIN_PASSWORD) {
-  alert("Access denied");
-  throw new Error("Blocked");
-}
-
-/* CLOUDINARY CONFIG (Saved locally so you don't type it every time) */
-let cloudName = localStorage.getItem('CLOUDINARY_CLOUD_NAME');
-let uploadPreset = localStorage.getItem('CLOUDINARY_UPLOAD_PRESET');
-
-if (!cloudName || !uploadPreset) {
-  cloudName = prompt("Enter Cloudinary Cloud Name");
-  uploadPreset = prompt("Enter Cloudinary Unsigned Upload Preset Name");
-  if (cloudName && uploadPreset) {
-    localStorage.setItem('CLOUDINARY_CLOUD_NAME', cloudName);
-    localStorage.setItem('CLOUDINARY_UPLOAD_PRESET', uploadPreset);
-  } else {
-    alert("Cloudinary credentials required for upload.");
-    throw new Error("Missing Cloudinary Config");
-  }
-}
-
-
-/* ===== REGULAR UPLOAD ===== */
+/* ===== UPLOAD ===== */
 const uploadForm = document.getElementById('uploadForm');
 const uploadStatus = document.getElementById('uploadStatus');
 
@@ -96,40 +124,56 @@ uploadForm.addEventListener('submit', async (e) => {
   const file = document.getElementById('file').files[0];
 
   if (!subject || !file) {
-    setStatus("Subject and File are required.", "error");
-    return;
+    setStatus("Subject and File are required.", "error"); return;
   }
-
   if (!title) {
     title = file.name.split('.').slice(0, -1).join('.'); 
   }
 
   const safeTitle = title.replace(/[^a-zA-Z0-9 _-]/g, '').replace(/ /g, '_');
   const folderPath = `chemistry_cycle/${subject}`;
-  const tagContent = `chemistry_cycle_${subject}`;
 
-  setStatus("Uploading to Cloudinary...", "");
-
-  const formData = new FormData();
-  formData.append('file', file);
-  formData.append('upload_preset', uploadPreset);
-  formData.append('folder', folderPath);
-  formData.append('public_id', safeTitle);
-  formData.append('resource_type', 'auto'); 
-  formData.append('tags', tagContent);
+  setStatus("Generating secure upload credentials...", "");
 
   try {
-    const res = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/upload`, {
+    // 1. Get secure signature from our completely private backend
+    const signRes = await fetch('/api/sign', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ folder: folderPath, public_id: safeTitle })
+    });
+    
+    if (!signRes.ok) throw new Error("Failed to authenticate upload with backend");
+    const { timestamp, signature, cloud_name, api_key } = await signRes.json();
+
+    setStatus("Uploading file...", "");
+
+    // 2. Upload file directly to Cloudinary using the secure signature
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('api_key', api_key);
+    formData.append('timestamp', timestamp);
+    formData.append('signature', signature);
+    formData.append('folder', folderPath);
+    formData.append('public_id', safeTitle);
+
+    const uploadRes = await fetch(`https://api.cloudinary.com/v1_1/${cloud_name}/upload`, {
       method: 'POST',
       body: formData
     });
 
-    const data = await res.json();
+    if (!uploadRes.ok) {
+      const errData = await uploadRes.json();
+      throw new Error(errData.error?.message || "Upload Failed");
+    }
 
-    if (!res.ok) throw new Error(data.error?.message || "Upload Failed");
-
-    setStatus("Upload successful! Attached Tag: " + tagContent, "success");
+    setStatus("Upload completely successful!", "success");
     uploadForm.reset();
+
+    // Auto-reload manage panel if looking at the same subject
+    if (document.getElementById('manageSubject').value === subject) {
+      document.getElementById('loadBtn').click();
+    }
 
   } catch(err) {
     setStatus(err.message, "error");
@@ -137,6 +181,73 @@ uploadForm.addEventListener('submit', async (e) => {
   }
 });
 
+
+/* ===== MANAGE FILES ===== */
+const loadBtn = document.getElementById('loadBtn');
+const manageFilesBox = document.getElementById('manageFilesBox');
+
+loadBtn.addEventListener('click', async () => {
+  const subject = document.getElementById('manageSubject').value;
+  manageFilesBox.innerHTML = `<div style="padding:1rem;text-align:center;"><div class="loader" style="margin:0;"></div></div>`;
+
+  try {
+    const res = await fetch(`/api/list?subject=${subject}`);
+    if (!res.ok) throw new Error(`Backend fetch failed (Status ${res.status})`);
+    
+    const files = await res.json();
+
+    if (!files || files.length === 0) {
+      manageFilesBox.innerHTML = `<div style="padding: 1rem; color: #64748b; text-align: center;">No files uploaded for ${subject} yet.</div>`;
+      return;
+    }
+
+    manageFilesBox.innerHTML = '';
+    files.forEach(file => {
+      const row = document.createElement('div');
+      row.className = 'manage-row';
+      
+      const a = document.createElement('a');
+      a.href = file.url;
+      a.target = "_blank";
+      a.className = "manage-name";
+      a.textContent = file.name.replace(/_/g, ' ');
+
+      const delBtn = document.createElement('button');
+      delBtn.className = "action-btn";
+      delBtn.textContent = "Delete";
+      delBtn.onclick = async () => {
+        if(!confirm(`Are you sure you want to permanently delete "${file.name}"?`)) return;
+        
+        delBtn.textContent = "Deleting...";
+        delBtn.disabled = true;
+
+        try {
+          const delRes = await fetch('/api/delete', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ public_id: file.public_id })
+          });
+          if(!delRes.ok) throw new Error("Delete failed");
+          row.remove();
+          if (manageFilesBox.children.length === 0) {
+            manageFilesBox.innerHTML = `<div style="padding: 1rem; color: #64748b; text-align: center;">No files uploaded for ${subject} yet.</div>`;
+          }
+        } catch(e) {
+          alert(e.message);
+          delBtn.textContent = "Delete";
+          delBtn.disabled = false;
+        }
+      };
+
+      row.appendChild(a);
+      row.appendChild(delBtn);
+      manageFilesBox.appendChild(row);
+    });
+
+  } catch(e) {
+    manageFilesBox.innerHTML = `<div style="padding: 1rem; color: #ef4444; font-weight: 600; text-align: center;">Error loading files: ${e.message}</div>`;
+  }
+});
 </script>
 
 </body>
