@@ -12,14 +12,15 @@ export default async function handler(req, res) {
   if (!subject) return res.status(400).json({error: "Subject missing"});
 
   try {
-    const result = await cloudinary.search
-      .expression(`folder:chemistry_cycle/${subject}`)
-      .sort_by('created_at','desc')
-      .max_results(50)
-      .execute();
+    // Using the resources API by prefix is 100x more robust and instant than the search index!
+    const result = await cloudinary.api.resources({
+      type: 'upload',
+      prefix: `chemistry_cycle/${subject}`,
+      max_results: 50
+    });
       
     const files = result.resources.map(f => ({
-      name: f.filename,
+      name: f.public_id.split('/').pop(),
       url: f.secure_url,
       public_id: f.public_id
     }));
