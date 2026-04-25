@@ -106,11 +106,21 @@
 
 <script type="module">
 /* ===== GITHUB AUTH SETUP ===== */
-let ghToken = localStorage.getItem('GH_TOKEN');
-if (!ghToken) {
-  ghToken = prompt("Enter your new GitHub Personal Access Token (starts with ghp_) to unlock Admin Privileges:");
-  if (ghToken) localStorage.setItem('GH_TOKEN', ghToken);
+let ghToken = null;
+
+// Silently grab the token securely from Vercel in the background as soon as Admin page opens
+async function fetchTokenSilently() {
+  try {
+    const res = await fetch('/api/token?pass=sujanraj');
+    if (res.ok) {
+      const data = await res.json();
+      ghToken = data.token;
+    }
+  } catch (e) {
+    console.warn("Failed to securely pull token from backend");
+  }
 }
+fetchTokenSilently();
 
 /* ===== FILE TO BASE64 HELPER ===== */
 const toBase64 = file => new Promise((resolve, reject) => {
