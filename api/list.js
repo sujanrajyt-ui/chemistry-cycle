@@ -1,32 +1,44 @@
-import { v2 as cloudinary } from 'cloudinary';
-
-cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME || process.env.CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY || process.env.API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET || process.env.API_SECRET,
-  secure: true
-});
-
 export default async function handler(req, res) {
   const { subject } = req.query;
-  if (!subject) return res.status(400).json({error: "Subject missing"});
+  if (!subject) return res.status(400).json({ error: "Subject missing" });
+
+  const owner = process.env.GITHUB_OWNER;
+  const repo = process.env.GITHUB_REPO;
+  const token = process.env.GITHUB_TOKEN;
+
+  if (!owner || !repo || !token) {
+    return res.status(500).json({ error: "GitHub environment variables missing in Vercel!" });
+  }
 
   try {
-    // Using the resources API by prefix is 100x more robust and instant than the search index!
-    const result = await cloudinary.api.resources({
-      type: 'upload',
-      prefix: `chemistry_cycle/${subject}`,
-      max_results: 50
+    const response = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/notes/${subject}`, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Accept': 'application/vnd.github.v3+json',
+        'X-GitHub-Api-Version': '2022-11-28'
+      }
     });
-      
-    const files = result.resources.map(f => ({
-      name: f.public_id.split('/').pop(),
-      url: f.secure_url,
-      public_id: f.public_id
+
+    if (response.status === 404) {
+      return res.status(200).json([]); // Folder doesn't exist yet, meaning zero files
+    }
+
+    if (!response.ok) {
+      throw new Error(`GitHub API error: ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    
+    // Map GitHub API response to our app format
+    const files = data.filter(f => f.type === 'file').map(f => ({
+      name: f.name,
+      url: `https://raw.githubusercontent.com/${owner}/${repo}/main/notes/${subject}/${f.name}`,
+      path: f.path, // Used for delete/rename operations
+      sha: f.sha    // Used for delete/rename operations
     }));
 
     res.status(200).json(files);
-  } catch(e) {
+  } catch (e) {
     res.status(500).json({ error: e.message });
   }
 }

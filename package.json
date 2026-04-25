@@ -1,9 +1,7 @@
 {
-  "name": "chemistry-cycle",
+  "name": "chemistry-cycle-github-cms",
   "version": "1.0.0",
-  "description": "API Routes for Cloudinary",
+  "description": "API Routes for GitHub CMS",
   "type": "module",
-  "dependencies": {
-    "cloudinary": "^2.1.0"
-  }
+  "dependencies": {}
 }

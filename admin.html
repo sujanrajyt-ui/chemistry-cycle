@@ -7,7 +7,6 @@
 <link rel="stylesheet" href="style.css" />
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
-/* Adjustments for manage section */
 .manage-row {
   display: flex;
   justify-content: space-between;
@@ -20,14 +19,8 @@
 .manage-name { font-weight: 600; color: var(--text-primary); cursor: pointer; text-decoration: none; }
 .manage-name:hover { text-decoration: underline; color: var(--primary); }
 .action-btn { 
-  background: #f87171; 
-  color: white; 
-  border: none; 
-  padding: 0.4rem 0.8rem; 
-  border-radius: 6px; 
-  cursor: pointer; 
-  font-weight: 600; 
-  font-size: 0.85rem;
+  background: #f87171; color: white; border: none; padding: 0.4rem 0.8rem; 
+  border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 0.85rem;
 }
 .action-btn:hover { background: #ef4444; }
 .btn-small { padding: 0.5rem 1rem; margin-top: 0; width: auto; }
@@ -46,7 +39,8 @@
 
 <!-- UPLOAD -->
 <div class="admin-card">
-  <h2>Upload New File</h2>
+  <h2>Upload New File to GitHub</h2>
+  <p style="font-size:0.85rem; color:#64748b; margin-top:-10px; margin-bottom:1.5rem;">Max file size: 4.5MB</p>
 
   <form id="uploadForm">
     <label>Subject</label>
@@ -67,7 +61,7 @@
     <label>File</label>
     <input id="file" type="file" required>
 
-    <button type="submit" class="admin-btn">Upload to Database</button>
+    <button type="submit" class="admin-btn">Commit to GitHub</button>
   </form>
 
   <div id="uploadStatus" class="status-msg" style="display:none;"></div>
@@ -101,11 +95,15 @@
 
 </main>
 
-<footer class="site-footer">
-  <p>&copy; 2026 Chemistry Cycle Admin</p>
-</footer>
-
 <script type="module">
+/* ===== FILE TO BASE64 HELPER ===== */
+const toBase64 = file => new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => resolve(reader.result.split(',')[1]); // remove data:image... prefix
+    reader.onerror = error => reject(error);
+});
+
 /* ===== UPLOAD ===== */
 const uploadForm = document.getElementById('uploadForm');
 const uploadStatus = document.getElementById('uploadStatus');
@@ -126,51 +124,41 @@ uploadForm.addEventListener('submit', async (e) => {
   if (!subject || !file) {
     setStatus("Subject and File are required.", "error"); return;
   }
+  
+  if (file.size > 4.5 * 1024 * 1024) {
+    setStatus("File is too large! Maximum allowed is 4.5MB.", "error"); return;
+  }
+
   if (!title) {
     title = file.name.split('.').slice(0, -1).join('.'); 
   }
 
   const safeTitle = title.replace(/[^a-zA-Z0-9 _-]/g, '').replace(/ /g, '_');
-  const folderPath = `chemistry_cycle/${subject}`;
+  const finalFilename = safeTitle + '.pdf'; // Hardcoded PDF extension for notes
 
-  setStatus("Generating secure upload credentials...", "");
+  setStatus("Converting file and commiting to GitHub...", "");
 
   try {
-    // 1. Get secure signature from our completely private backend
-    const signRes = await fetch('/api/sign', {
+    const base64Content = await toBase64(file);
+
+    const uploadRes = await fetch(`/api/upload`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ folder: folderPath, public_id: safeTitle })
-    });
-    
-    if (!signRes.ok) throw new Error("Failed to authenticate upload with backend");
-    const { timestamp, signature, cloud_name, api_key } = await signRes.json();
-
-    setStatus("Uploading file...", "");
-
-    // 2. Upload file directly to Cloudinary using the secure signature
-    const formData = new FormData();
-    formData.append('file', file);
-    formData.append('api_key', api_key);
-    formData.append('timestamp', timestamp);
-    formData.append('signature', signature);
-    formData.append('folder', folderPath);
-    formData.append('public_id', safeTitle);
-
-    const uploadRes = await fetch(`https://api.cloudinary.com/v1_1/${cloud_name}/upload`, {
-      method: 'POST',
-      body: formData
+      body: JSON.stringify({
+        subject: subject,
+        filename: finalFilename,
+        base64Content: base64Content
+      })
     });
 
     if (!uploadRes.ok) {
       const errData = await uploadRes.json();
-      throw new Error(errData.error?.message || "Upload Failed");
+      throw new Error(errData.error || "Upload Failed");
     }
 
-    setStatus("Upload completely successful!", "success");
+    setStatus(`Committed successfully to GitHub in notes/${subject}!`, "success");
     uploadForm.reset();
 
-    // Auto-reload manage panel if looking at the same subject
     if (document.getElementById('manageSubject').value === subject) {
       document.getElementById('loadBtn').click();
     }
@@ -216,7 +204,7 @@ loadBtn.addEventListener('click', async () => {
       delBtn.className = "action-btn";
       delBtn.textContent = "Delete";
       delBtn.onclick = async () => {
-        if(!confirm(`Are you sure you want to permanently delete "${file.name}"?`)) return;
+        if(!confirm(`Are you sure you want to permanently delete "${file.name}" from GitHub?`)) return;
         
         delBtn.textContent = "Deleting...";
         delBtn.disabled = true;
@@ -225,12 +213,17 @@ loadBtn.addEventListener('click', async () => {
           const delRes = await fetch('/api/delete', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({ public_id: file.public_id })
+            body: JSON.stringify({ path: file.path, sha: file.sha })
           });
-          if(!delRes.ok) throw new Error("Delete failed");
+          
+          if(!delRes.ok) {
+            const err = await delRes.json();
+            throw new Error(err.error || "Delete failed");
+          }
+          
           row.remove();
           if (manageFilesBox.children.length === 0) {
-            manageFilesBox.innerHTML = `<div style="padding: 1rem; color: #64748b; text-align: center;">No files uploaded for ${subject} yet.</div>`;
+            manageFilesBox.innerHTML = `<div style="padding: 1rem; color: #64748b; text-align: center;">No files in ${subject}.</div>`;
           }
         } catch(e) {
           alert(e.message);

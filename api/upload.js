@@ -1,9 +1,18 @@
+// Important: Vercel Free limits body size to ~4.5MB
+export const config = {
+  api: {
+    bodyParser: {
+      sizeLimit: '4.5mb',
+    },
+  },
+};
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({error: "Method not allowed"});
   
-  const { path, sha } = req.body;
-  if (!path || !sha) {
-    return res.status(400).json({error: "Missing fields (path or sha)"});
+  const { subject, filename, base64Content } = req.body;
+  if (!subject || !filename || !base64Content) {
+    return res.status(400).json({error: "Missing fields"});
   }
 
   const owner = process.env.GITHUB_OWNER;
@@ -12,13 +21,13 @@ export default async function handler(req, res) {
 
   try {
     const payload = {
-      message: `CMS Delete: Remove ${path}`,
-      sha: sha,
+      message: `CMS Upload: ${filename} to ${subject}`,
+      content: base64Content,
       branch: 'main'
     };
 
-    const response = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${path}`, {
-      method: 'DELETE',
+    const response = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/notes/${subject}/${filename}`, {
+      method: 'PUT',
       headers: {
         'Authorization': `Bearer ${token}`,
         'Accept': 'application/vnd.github.v3+json',
