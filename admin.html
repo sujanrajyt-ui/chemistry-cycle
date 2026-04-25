@@ -105,6 +105,13 @@
 </main>
 
 <script type="module">
+/* ===== GITHUB AUTH SETUP ===== */
+let ghToken = localStorage.getItem('GH_TOKEN');
+if (!ghToken) {
+  ghToken = prompt("Enter your new GitHub Personal Access Token (starts with ghp_) to unlock Admin Privileges:");
+  if (ghToken) localStorage.setItem('GH_TOKEN', ghToken);
+}
+
 /* ===== FILE TO BASE64 HELPER ===== */
 const toBase64 = file => new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -126,6 +133,8 @@ function setStatus(msg, type) {
 uploadForm.addEventListener('submit', async (e) => {
   e.preventDefault();
 
+  if(!ghToken) { alert("GitHub Token Required!"); return; }
+
   const subject = document.getElementById('subject').value;
   const option = document.getElementById('option').value;
   const file = document.getElementById('file').files[0];
@@ -134,45 +143,40 @@ uploadForm.addEventListener('submit', async (e) => {
     setStatus("Subject and File are required.", "error"); return;
   }
   
-  // Hard limit to prevent "Request Entity Too Large" from crashing Vercel infrastructure
-  if (file.size > 4.2 * 1024 * 1024) {
-    setStatus("Vercel Error: File is larger than 4.2MB limit!", "error"); return;
+  if (file.size > 99 * 1024 * 1024) {
+    setStatus("GitHub limit is 100MB per file.", "error"); return;
   }
 
-  // E.g. IPP_Chapter_1.pdf
   const finalFilename = `${subject}_${option}.pdf`;
 
-  setStatus("Converting file and commiting to GitHub...", "");
+  setStatus("Uploading file direct to GitHub (bypassing Vercel limits)...", "");
 
   try {
     const base64Content = await toBase64(file);
 
-    const uploadRes = await fetch(`/api/upload`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        subject: subject,
-        filename: finalFilename,
-        base64Content: base64Content
-      })
+    const payload = {
+      message: `CMS Upload: ${finalFilename} to ${subject}`,
+      content: base64Content,
+      branch: 'main'
+    };
+
+    const uploadRes = await fetch(`https://api.github.com/repos/sujanrajyt-ui/chemistry-cycle/contents/notes/${subject}/${finalFilename}`, {
+      method: 'PUT',
+      headers: {
+        'Authorization': `Bearer ${ghToken}`,
+        'Accept': 'application/vnd.github.v3+json',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(payload)
     });
 
     if (!uploadRes.ok) {
-      let errMessage = `Error ${uploadRes.status}: Upload Failed`;
-      const text = await uploadRes.text(); // Grab text first to avoid JSON parse crashes
-      
-      try {
-        const errData = JSON.parse(text);
-        if(errData.error) errMessage = errData.error;
-      } catch(parseErr) {
-        // If it's pure text (like "Request Entity Too Large"), catch it here safely
-        if(text.includes("Request Entity Too Large")) {
-           errMessage = "Vercel blocked the upload because the file is too large (> 4.5MB). Compress your PDF first!";
-        } else {
-           errMessage = text;
-        }
+      const errData = await uploadRes.json();
+      if(errData.message === "Bad credentials") {
+         localStorage.removeItem('GH_TOKEN'); // clear bad token
+         throw new Error("Invalid GitHub Token! The token does not have 'repo' permissions or is typed wrong. Refresh the page to type it again.");
       }
-      throw new Error(errMessage);
+      throw new Error(errData.message || "Upload Failed");
     }
 
     setStatus(`Committed successfully to GitHub in notes/${subject}!`, "success");
@@ -229,15 +233,25 @@ loadBtn.addEventListener('click', async () => {
         delBtn.disabled = true;
 
         try {
-          const delRes = await fetch('/api/delete', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({ path: file.path, sha: file.sha })
+          const payload = {
+            message: `CMS Delete: Remove ${file.path}`,
+            sha: file.sha,
+            branch: 'main'
+          };
+
+          const delRes = await fetch(`https://api.github.com/repos/sujanrajyt-ui/chemistry-cycle/contents/${file.path}`, {
+            method: 'DELETE',
+            headers: {
+              'Authorization': `Bearer ${ghToken}`,
+              'Accept': 'application/vnd.github.v3+json',
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(payload)
           });
           
           if(!delRes.ok) {
             const err = await delRes.json();
-            throw new Error(err.error || "Delete failed");
+            throw new Error(err.message || "Delete failed");
           }
           
           row.remove();
