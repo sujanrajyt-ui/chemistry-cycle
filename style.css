@@ -1,20 +1,25 @@
 :root {
-  --primary: #4F46E5;
-  --primary-hover: #4338CA;
-  --secondary: #ec4899;
-  --bg-gradient-start: #0f172a;
-  --bg-gradient-end: #1e1b4b;
-  --glass-bg: rgba(255, 255, 255, 0.05);
-  --glass-border: rgba(255, 255, 255, 0.1);
-  --text-primary: #f8fafc;
-  --text-secondary: #cbd5e1;
+  --primary: #ef4444;       /* Red 500 */
+  --primary-hover: #b91c1c; /* Red 700 */
+  --secondary: #dc2626;     /* Red 600 */
+  --bg-main: #fef2f2;       /* Very light red/white bg */
+  --glass-bg: rgba(255, 255, 255, 0.7);
+  --glass-border: rgba(239, 68, 68, 0.2);
+  --text-primary: #1e293b;
+  --text-secondary: #475569;
   --font-main: 'Inter', system-ui, -apple-system, sans-serif;
 }
 
 body {
   margin: 0;
   font-family: var(--font-main);
-  background: linear-gradient(135deg, var(--bg-gradient-start), var(--bg-gradient-end));
+  background-color: var(--bg-main);
+  /* Cool Graphics: Abstract red background blobs using multiple radial gradients */
+  background-image: 
+    radial-gradient(circle at 15% 50%, rgba(239, 68, 68, 0.15) 0%, transparent 50%),
+    radial-gradient(circle at 85% 30%, rgba(220, 38, 38, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 50% 80%, rgba(185, 28, 28, 0.08) 0%, transparent 50%);
+  background-attachment: fixed;
   color: var(--text-primary);
   min-height: 100vh;
   display: flex;
@@ -23,18 +28,15 @@ body {
 
 header.site-header {
   padding: 1.5rem 2rem;
-  background: var(--glass-bg);
-  backdrop-filter: blur(10px);
-  border-bottom: 1px solid var(--glass-border);
-  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+  background: linear-gradient(135deg, var(--secondary), var(--primary-hover));
+  color: white;
+  box-shadow: 0 4px 20px rgba(220, 38, 38, 0.3);
 }
 
 .logo {
   font-size: 1.5rem;
   font-weight: 800;
-  background: linear-gradient(to right, #60a5fa, #c084fc);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+  color: white;
   letter-spacing: -0.5px;
 }
 
@@ -45,6 +47,8 @@ main.container {
   padding: 3rem 1.5rem;
   width: 100%;
   box-sizing: border-box;
+  position: relative;
+  z-index: 1;
 }
 
 .hero {
@@ -57,9 +61,7 @@ main.container {
   font-size: 3rem;
   font-weight: 800;
   margin-bottom: 1rem;
-  background: linear-gradient(to right, #f8fafc, #94a3b8);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+  color: var(--primary-hover);
 }
 
 .hero p {
@@ -76,23 +78,23 @@ main.container {
 }
 
 .btn {
-  background: var(--glass-bg);
-  border: 1px solid var(--glass-border);
-  color: var(--text-primary);
+  background: white;
+  border: 2px solid var(--primary);
+  color: var(--primary);
   padding: 0.8rem 2rem;
   font-size: 1rem;
-  font-weight: 600;
+  font-weight: 700;
   border-radius: 99px;
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  backdrop-filter: blur(5px);
+  box-shadow: 0 4px 6px rgba(239, 68, 68, 0.1);
 }
 
 .btn:hover {
-  background: rgba(255, 255, 255, 0.15);
-  transform: translateY(-2px);
-  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
-  border-color: rgba(255, 255, 255, 0.3);
+  background: var(--primary);
+  color: white;
+  transform: translateY(-3px);
+  box-shadow: 0 10px 20px rgba(239, 68, 68, 0.3);
 }
 
 .btn:active {
@@ -105,8 +107,8 @@ main.container {
   border: 1px solid var(--glass-border);
   border-radius: 16px;
   padding: 2rem;
-  backdrop-filter: blur(12px);
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(20px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
   min-height: 200px;
   animation: slideUp 0.5s ease-out;
 }
@@ -114,9 +116,9 @@ main.container {
 .files-box h3 {
   margin-top: 0;
   font-size: 1.8rem;
-  font-weight: 700;
-  color: #fff;
-  border-bottom: 1px solid var(--glass-border);
+  font-weight: 800;
+  color: var(--primary-hover);
+  border-bottom: 2px solid rgba(239, 68, 68, 0.1);
   padding-bottom: 1rem;
   margin-bottom: 1.5rem;
 }
@@ -129,19 +131,21 @@ main.container {
   display: flex;
   align-items: center;
   padding: 1rem 1.5rem;
-  background: rgba(0, 0, 0, 0.2);
+  background: white;
   border-radius: 12px;
-  color: var(--text-primary);
+  color: var(--primary-hover);
   text-decoration: none;
-  font-weight: 500;
+  font-weight: 600;
   transition: all 0.2s ease;
-  border: 1px solid transparent;
+  border: 1px solid rgba(239, 68, 68, 0.1);
+  box-shadow: 0 2px 5px rgba(0,0,0,0.02);
 }
 
 .file-item a:hover {
-  background: rgba(255, 255, 255, 0.05);
-  border-color: var(--glass-border);
+  background: #fef2f2;
+  border-color: var(--primary);
   transform: translateX(5px);
+  box-shadow: 0 5px 15px rgba(239, 68, 68, 0.1);
 }
 
 .file-item a::before {
@@ -154,9 +158,9 @@ main.container {
   display: inline-block;
   width: 30px;
   height: 30px;
-  border: 3px solid rgba(255,255,255,0.3);
+  border: 3px solid rgba(239, 68, 68, 0.2);
   border-radius: 50%;
-  border-top-color: #fff;
+  border-top-color: var(--primary);
   animation: spin 1s ease-in-out infinite;
   margin: 2rem auto;
 }
@@ -166,16 +170,18 @@ main.container {
 .admin-card {
   background: var(--glass-bg);
   border: 1px solid var(--glass-border);
-  backdrop-filter: blur(12px);
+  backdrop-filter: blur(20px);
   border-radius: 16px;
   padding: 2rem;
   margin-bottom: 2rem;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
 }
 
 .admin-card h2 {
   margin-top: 0;
   font-size: 1.5rem;
-  border-bottom: 1px solid var(--glass-border);
+  color: var(--primary-hover);
+  border-bottom: 2px solid rgba(239, 68, 68, 0.1);
   padding-bottom: 1rem;
   margin-bottom: 1.5rem;
 }
@@ -183,7 +189,8 @@ main.container {
 label {
   display: block;
   margin-bottom: 0.5rem;
-  font-size: 0.9rem;
+  font-size: 0.95rem;
+  font-weight: 600;
   color: var(--text-secondary);
 }
 
@@ -191,39 +198,38 @@ input, select {
   width: 100%;
   padding: 0.8rem;
   margin-bottom: 1.5rem;
-  background: rgba(0,0,0,0.2);
-  border: 1px solid var(--glass-border);
+  background: white;
+  border: 1px solid #cbd5e1;
   border-radius: 8px;
-  color: #fff;
+  color: var(--text-primary);
   font-size: 1rem;
   box-sizing: border-box;
+  transition: all 0.2s;
 }
 
 input:focus, select:focus {
   outline: none;
   border-color: var(--primary);
-  box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.2);
-}
-
-select option {
-  background: var(--bg-gradient-start);
-  color: #fff;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.2);
 }
 
 .admin-btn {
-  background: linear-gradient(135deg, var(--primary), #818cf8);
+  background: linear-gradient(135deg, var(--primary), var(--secondary));
   color: white;
   border: none;
-  padding: 0.8rem 1.5rem;
+  padding: 1rem 1.5rem;
   border-radius: 8px;
-  font-weight: 600;
+  font-weight: 700;
+  font-size: 1.05rem;
   cursor: pointer;
-  transition: opacity 0.2s;
+  transition: all 0.2s;
   width: 100%;
+  box-shadow: 0 4px 10px rgba(239, 68, 68, 0.3);
 }
 
 .admin-btn:hover {
-  opacity: 0.9;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 15px rgba(239, 68, 68, 0.4);
 }
 
 .site-footer {
@@ -231,8 +237,8 @@ select option {
   padding: 2rem;
   color: var(--text-secondary);
   font-size: 0.9rem;
-  border-top: 1px solid var(--glass-border);
-  background: rgba(0,0,0,0.2);
+  border-top: 1px solid rgba(239, 68, 68, 0.1);
+  background: white;
 }
 
 .status-msg {
@@ -240,11 +246,11 @@ select option {
   padding: 1rem;
   border-radius: 8px;
   text-align: center;
-  font-weight: 500;
+  font-weight: 600;
 }
 
-.status-msg.success { background: rgba(16, 185, 129, 0.2); color: #34d399; }
-.status-msg.error { background: rgba(239, 68, 68, 0.2); color: #f87171; }
+.status-msg.success { background: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
+.status-msg.error { background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
 
 @keyframes fadeIn {
   from { opacity: 0; }
