@@ -7,6 +7,7 @@
 
 <link rel="icon" href="data:,">
 <link rel="stylesheet" href="style.css" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
 
 <body>
@@ -21,7 +22,7 @@
 <section class="hero">
 
 <h1>Chemistry Cycle Notes</h1>
-<p>Select a subject to view notes or quiz.</p>
+<p>Select a subject to view resources and materials.</p>
 
 <div class="subjects">
   <button class="btn" data-subject="IPP">IPP</button>
@@ -31,7 +32,7 @@
   <button class="btn" data-subject="EV">EV</button>
   <button class="btn" data-subject="ESS">ESS</button>
   <button class="btn" data-subject="BIO">BIO</button>
-  <button class="btn" data-subject="ADLD">ADLD</button> <!-- ✅ ADDED -->
+  <button class="btn" data-subject="ADLD">ADLD</button>
 </div>
 
 <div id="filesBox" class="files-box" style="display:none;"></div>
@@ -40,77 +41,53 @@
 </main>
 
 <footer class="site-footer">
-<p>&copy; 2025 Chemistry Cycle • By Sujanraj</p>
+<p>&copy; 2026 Chemistry Cycle • By Sujanraj</p>
 </footer>
 
 <script type="module">
-import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
-
-const supabase = createClient(
-  'https://brvbbxbfcrcpgkxxfuhv.supabase.co',
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJydmJieGJmY3JjcGdreHhmdWh2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQ1NzM1MzIsImV4cCI6MjA4MDE0OTUzMn0.Z8FYzhVSn0eMgQAWcXg9ul70AeSyWMid4dFtrhAZalQ'
-);
-
 const filesBox = document.getElementById('filesBox');
-
 
 // ================= NOTES =================
 async function loadSubject(subject){
   filesBox.style.display = 'block';
-  filesBox.innerHTML = `Loading ${subject}...`;
+  filesBox.innerHTML = `<div class="loader"></div>`;
 
-  const { data, error } = await supabase.storage
-    .from('notes')
-    .list(`chemistry_cycle/${subject}`);
+  try {
+    const res = await fetch(`/api/list?subject=${subject}`);
+    if (!res.ok) throw new Error('Failed to load');
+    const data = await res.json();
 
-  if (error) {
-    filesBox.innerHTML = "Error loading files";
-    console.error(error);
-    return;
-  }
-
-  if (!data || data.length === 0) {
-    filesBox.innerHTML = "No files found";
-    return;
-  }
-
-  filesBox.innerHTML = `<h3>${subject} Notes</h3>`;
-
-  for (const file of data) {
-
-    // skip folders
-    if (file.name === '.emptyFolderPlaceholder') continue;
-
-    const { data:urlData, error:urlError } = await supabase
-      .storage
-      .from('notes')
-      .createSignedUrl(`chemistry_cycle/${subject}/${file.name}`, 60);
-
-    if (urlError) {
-      console.error(urlError);
-      continue;
+    if (!data || data.length === 0) {
+      filesBox.innerHTML = `<h3>${subject} Notes</h3><p style="color: var(--text-secondary)">No files found in this subject.</p>`;
+      return;
     }
 
-    filesBox.innerHTML += `
-      <div class="file-item">
-        <a href="${urlData.signedUrl}" target="_blank">
-          ${file.name}
-        </a>
-      </div>
-    `;
+    let html = `<h3>${subject} Notes</h3>`;
+    for (const file of data) {
+      html += `
+        <div class="file-item">
+          <a href="${file.url}" target="_blank">
+            ${file.name.replace(/_/g, ' ')}
+          </a>
+        </div>
+      `;
+    }
+    filesBox.innerHTML = html;
+
+  } catch(err) {
+    filesBox.innerHTML = `<p style="color: #f87171;">Error loading files. Please try again later.</p>`;
+    console.error(err);
   }
 }
-
 
 // ================= QUIZ =================
 async function loadQuizPage(file){
   filesBox.style.display = 'block';
-  filesBox.innerHTML = "Loading quiz...";
+  filesBox.innerHTML = `<div class="loader"></div>`;
 
   try {
     const res = await fetch(file);
     const html = await res.text();
-
     filesBox.innerHTML = html;
 
     // run scripts inside quiz
@@ -119,13 +96,11 @@ async function loadQuizPage(file){
       s.textContent = oldScript.textContent;
       document.body.appendChild(s);
     });
-
   } catch(err){
-    filesBox.innerHTML = "Error loading quiz";
+    filesBox.innerHTML = `<p style="color: #f87171;">Error loading quiz.</p>`;
     console.error(err);
   }
 }
-
 
 // ================= ROUTER =================
 document.querySelectorAll('[data-subject]').forEach(btn=>{
@@ -134,12 +109,9 @@ document.querySelectorAll('[data-subject]').forEach(btn=>{
 
     if(s === "ESS") loadQuizPage("ess.html");
     else if(s === "BIO") loadQuizPage("bio.html");
-    // 👉 if you ever make ADLD quiz, use this:
-    // else if(s === "ADLD") loadQuizPage("adld.html");
     else loadSubject(s);
   };
 });
-
 </script>
 
 </body>
