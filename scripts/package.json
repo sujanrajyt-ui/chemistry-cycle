@@ -1,0 +1,13 @@
+{
+  "name": "migration-script",
+  "version": "1.0.0",
+  "description": "Script to migrate Supabase storage to Cloudinary",
+  "type": "module",
+  "scripts": {
+    "start": "node migrate.js"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.39.0",
+    "cloudinary": "^2.1.0"
+  }
+}

@@ -99,13 +99,13 @@ uploadForm.addEventListener('submit', async (e) => {
     return;
   }
 
-  // If title isn't provided, just use the original file name
   if (!title) {
     title = file.name.split('.').slice(0, -1).join('.'); 
   }
 
   const safeTitle = title.replace(/[^a-zA-Z0-9 _-]/g, '').replace(/ /g, '_');
   const folderPath = `chemistry_cycle/${subject}`;
+  const tagContent = `chemistry_cycle_${subject}`;
 
   setStatus("Uploading to Cloudinary...", "");
 
@@ -113,8 +113,9 @@ uploadForm.addEventListener('submit', async (e) => {
   formData.append('file', file);
   formData.append('upload_preset', uploadPreset);
   formData.append('folder', folderPath);
-  formData.append('public_id', safeTitle); // Force the filename
+  formData.append('public_id', safeTitle);
   formData.append('resource_type', 'auto'); 
+  formData.append('tags', tagContent); // Critical for the Serverless Client List!
 
   try {
     const res = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/upload`, {
@@ -128,7 +129,7 @@ uploadForm.addEventListener('submit', async (e) => {
       throw new Error(data.error?.message || "Upload Failed");
     }
 
-    setStatus("Upload successful!", "success");
+    setStatus("Upload successful! Tag attached.", "success");
     uploadForm.reset();
 
   } catch(err) {
@@ -136,7 +137,6 @@ uploadForm.addEventListener('submit', async (e) => {
     console.error(err);
   }
 });
-
 </script>
 
 </body>

@@ -4,12 +4,10 @@
 <meta charset="UTF-8">
 <title>Chemistry Cycle - Notes</title>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-
 <link rel="icon" href="data:,">
 <link rel="stylesheet" href="style.css" />
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
-
 <body>
 
 <header class="site-header">
@@ -47,27 +45,59 @@
 <script type="module">
 const filesBox = document.getElementById('filesBox');
 
+// Check Cloud Name
+let cloudName = localStorage.getItem('CLOUDINARY_CLOUD_NAME');
+if (!cloudName) {
+  cloudName = prompt("Welcome! Please enter your Cloudinary Cloud Name to connect the database:");
+  if (cloudName) {
+    localStorage.setItem('CLOUDINARY_CLOUD_NAME', cloudName);
+  }
+}
+
 // ================= NOTES =================
 async function loadSubject(subject){
   filesBox.style.display = 'block';
   filesBox.innerHTML = `<div class="loader"></div>`;
 
+  if (!cloudName) {
+    filesBox.innerHTML = `<p style="color: #ef4444;">Cloudinary Cloud Name is missing. Please refresh and enter it.</p>`;
+    return;
+  }
+
   try {
-    const res = await fetch(`/api/list?subject=${subject}`);
-    if (!res.ok) throw new Error('Failed to load');
+    // Zero-Backend API! Fetches all files with this exact tag.
+    // NOTE: This usually defaults to /image/ list for PDFs uploaded as auto. Give it a shot.
+    const res = await fetch(`https://res.cloudinary.com/${cloudName}/image/list/chemistry_cycle_${subject}.json`);
+    
+    // If the 401 error occurs, it indicates "Resource list" is disabled in Cloudinary security settings
+    if (res.status === 401) {
+      throw new Error(`Unauthorized (401). Please go to Cloudinary Settings -> Security -> Restricted Media Types, and UNCHECK 'Resource list'.`);
+    }
+    
+    // If it 404s, they might have zero files or they uploaded them as raw.
+    if (res.status === 404) {
+      filesBox.innerHTML = `<h3>${subject} Notes</h3><p style="color: var(--text-secondary)">No files found in this subject (or the files are not tagged yet!).</p>`;
+      return;
+    }
+
+    if (!res.ok) throw new Error('Failed to load ' + res.statusText);
     const data = await res.json();
 
-    if (!data || data.length === 0) {
+    if (!data || !data.resources || data.resources.length === 0) {
       filesBox.innerHTML = `<h3>${subject} Notes</h3><p style="color: var(--text-secondary)">No files found in this subject.</p>`;
       return;
     }
 
     let html = `<h3>${subject} Notes</h3>`;
-    for (const file of data) {
+    for (const file of data.resources) {
+      const fileName = file.public_id.split('/').pop().replace(/_/g, ' ');
+      // The version handles cache busting, format is pdf
+      const fileUrl = `https://res.cloudinary.com/${cloudName}/image/upload/v${file.version}/${file.public_id}.pdf`;
+      
       html += `
         <div class="file-item">
-          <a href="${file.url}" target="_blank">
-            ${file.name.replace(/_/g, ' ')}
+          <a href="${fileUrl}" target="_blank">
+            ${fileName}
           </a>
         </div>
       `;
@@ -75,7 +105,7 @@ async function loadSubject(subject){
     filesBox.innerHTML = html;
 
   } catch(err) {
-    filesBox.innerHTML = `<p style="color: #f87171;">Error loading files. Please try again later.</p>`;
+    filesBox.innerHTML = `<p style="color: #ef4444; font-weight:600;">Error loading files:<br><small style="font-weight:400">${err.message}</small></p>`;
     console.error(err);
   }
 }
@@ -90,14 +120,14 @@ async function loadQuizPage(file){
     const html = await res.text();
     filesBox.innerHTML = html;
 
-    // run scripts inside quiz
+    // Run custom quiz scripts
     filesBox.querySelectorAll("script").forEach(oldScript=>{
       const s = document.createElement("script");
       s.textContent = oldScript.textContent;
       document.body.appendChild(s);
     });
   } catch(err){
-    filesBox.innerHTML = `<p style="color: #f87171;">Error loading quiz.</p>`;
+    filesBox.innerHTML = `<p style="color: #ef4444;">Error loading quiz.</p>`;
     console.error(err);
   }
 }
@@ -106,7 +136,6 @@ async function loadQuizPage(file){
 document.querySelectorAll('[data-subject]').forEach(btn=>{
   btn.onclick = ()=>{
     const s = btn.dataset.subject;
-
     if(s === "ESS") loadQuizPage("ess.html");
     else if(s === "BIO") loadQuizPage("bio.html");
     else loadSubject(s);
