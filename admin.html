@@ -55,11 +55,20 @@
       <option value="ADLD">ADLD</option>
     </select>
 
-    <label>Title (Optional: defaults to filename)</label>
-    <input id="title" placeholder="Unit 1 Notes">
+    <label>Document Type</label>
+    <select id="option">
+      <option value="Chapter_1">Chapter 1</option>
+      <option value="Chapter_2">Chapter 2</option>
+      <option value="Chapter_3">Chapter 3</option>
+      <option value="Chapter_4">Chapter 4</option>
+      <option value="Chapter_5">Chapter 5</option>
+      <option value="MCQ">MCQ</option>
+      <option value="Question_Bank">Question Bank</option>
+      <option value="Notes">Notes</option>
+    </select>
 
     <label>File</label>
-    <input id="file" type="file" required>
+    <input id="file" type="file" accept="application/pdf" required>
 
     <button type="submit" class="admin-btn">Commit to GitHub</button>
   </form>
@@ -118,23 +127,20 @@ uploadForm.addEventListener('submit', async (e) => {
   e.preventDefault();
 
   const subject = document.getElementById('subject').value;
-  let title = document.getElementById('title').value.trim();
+  const option = document.getElementById('option').value;
   const file = document.getElementById('file').files[0];
 
   if (!subject || !file) {
     setStatus("Subject and File are required.", "error"); return;
   }
   
-  if (file.size > 4.5 * 1024 * 1024) {
-    setStatus("File is too large! Maximum allowed is 4.5MB.", "error"); return;
+  // Hard limit to prevent "Request Entity Too Large" from crashing Vercel infrastructure
+  if (file.size > 4.2 * 1024 * 1024) {
+    setStatus("Vercel Error: File is larger than 4.2MB limit!", "error"); return;
   }
 
-  if (!title) {
-    title = file.name.split('.').slice(0, -1).join('.'); 
-  }
-
-  const safeTitle = title.replace(/[^a-zA-Z0-9 _-]/g, '').replace(/ /g, '_');
-  const finalFilename = safeTitle + '.pdf'; // Hardcoded PDF extension for notes
+  // E.g. IPP_Chapter_1.pdf
+  const finalFilename = `${subject}_${option}.pdf`;
 
   setStatus("Converting file and commiting to GitHub...", "");
 
@@ -152,8 +158,21 @@ uploadForm.addEventListener('submit', async (e) => {
     });
 
     if (!uploadRes.ok) {
-      const errData = await uploadRes.json();
-      throw new Error(errData.error || "Upload Failed");
+      let errMessage = `Error ${uploadRes.status}: Upload Failed`;
+      const text = await uploadRes.text(); // Grab text first to avoid JSON parse crashes
+      
+      try {
+        const errData = JSON.parse(text);
+        if(errData.error) errMessage = errData.error;
+      } catch(parseErr) {
+        // If it's pure text (like "Request Entity Too Large"), catch it here safely
+        if(text.includes("Request Entity Too Large")) {
+           errMessage = "Vercel blocked the upload because the file is too large (> 4.5MB). Compress your PDF first!";
+        } else {
+           errMessage = text;
+        }
+      }
+      throw new Error(errMessage);
     }
 
     setStatus(`Committed successfully to GitHub in notes/${subject}!`, "success");
