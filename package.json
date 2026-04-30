@@ -3,5 +3,7 @@
   "version": "1.0.0",
   "description": "API Routes for GitHub CMS",
   "type": "module",
-  "dependencies": {}
+  "dependencies": {
+    "@vercel/analytics": "^2.0.1"
+  }
 }
