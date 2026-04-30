@@ -31,6 +31,7 @@
   <button class="btn" data-subject="ESS">ESS</button>
   <button class="btn" data-subject="BIO">BIO</button>
   <button class="btn" data-subject="ADLD">ADLD</button>
+  <button class="btn" data-subject="BE">BE</button>
 </div>
 
 <div id="bucketsContainer" class="buckets-container"></div>
@@ -69,7 +70,7 @@ function createBucket(subject) {
   return bucket.querySelector('.bucket-content');
 }
 
-// ================= NOTES =================
+// ================= NOTES & QUIZ =================
 async function loadSubject(subject){
   if (toggleBucket(subject)) return;
   const contentArea = createBucket(subject);
@@ -87,22 +88,49 @@ async function loadSubject(subject){
     }
     const files = await res.json();
 
-    if (!files || files.length === 0) {
-      contentArea.innerHTML = `<p style="color: var(--text-secondary)">No files found in this subject.</p>`;
-      return;
+    let html = '';
+    
+    if (subject === 'ESS' || subject === 'BIO') {
+      html += `<button id="quiz-btn-${subject}" class="btn" style="margin-bottom:1.5rem; width:100%; background:var(--primary); color:white; border:none; box-shadow: 0 4px 10px rgba(239, 68, 68, 0.3);">Attempt ${subject} Quiz</button>`;
     }
 
-    let html = '';
-    for (const file of files) {
-      html += `
-        <div class="file-item">
-          <a href="${file.url}" target="_blank">
-            ${file.name.replace(/_/g, ' ')}
-          </a>
-        </div>
-      `;
+    if (!files || files.length === 0) {
+      html += `<p style="color: var(--text-secondary)">No files found in this subject.</p>`;
+    } else {
+      for (const file of files) {
+        html += `
+          <div class="file-item">
+            <a href="${file.url}" target="_blank">
+              ${file.name.replace(/_/g, ' ')}
+            </a>
+          </div>
+        `;
+      }
     }
+    
     contentArea.innerHTML = html;
+
+    if (subject === 'ESS' || subject === 'BIO') {
+      const quizBtn = document.getElementById(`quiz-btn-${subject}`);
+      if (quizBtn) {
+        quizBtn.onclick = async () => {
+          contentArea.innerHTML = `<div class="loader"></div>`;
+          try {
+            const file = subject === 'ESS' ? 'ess.html' : 'bio.html';
+            const quizRes = await fetch(file);
+            const quizHtml = await quizRes.text();
+            contentArea.innerHTML = quizHtml;
+            contentArea.querySelectorAll("script").forEach(oldScript=>{
+              const s = document.createElement("script");
+              s.textContent = oldScript.textContent;
+              document.body.appendChild(s);
+            });
+          } catch(err) {
+            contentArea.innerHTML = `<p style="color: #ef4444;">Error loading quiz.</p>`;
+          }
+        };
+      }
+    }
 
   } catch(err) {
     contentArea.innerHTML = `<p style="color: #ef4444; font-weight:600;">Error loading files:<br><small style="font-weight:400">${err.message}</small></p>`;
@@ -110,35 +138,10 @@ async function loadSubject(subject){
   }
 }
 
-// ================= QUIZ =================
-async function loadQuizPage(file, subject){
-  if (toggleBucket(subject)) return;
-  const contentArea = createBucket(subject);
-
-  try {
-    const res = await fetch(file);
-    const html = await res.text();
-    contentArea.innerHTML = html;
-
-    // Run custom quiz scripts
-    contentArea.querySelectorAll("script").forEach(oldScript=>{
-      const s = document.createElement("script");
-      s.textContent = oldScript.textContent;
-      document.body.appendChild(s);
-    });
-  } catch(err){
-    contentArea.innerHTML = `<p style="color: #ef4444;">Error loading quiz.</p>`;
-    console.error(err);
-  }
-}
-
 // ================= ROUTER =================
 document.querySelectorAll('[data-subject]').forEach(btn=>{
   btn.onclick = ()=>{
-    const s = btn.dataset.subject;
-    if(s === "ESS") loadQuizPage("ess.html", s);
-    else if(s === "BIO") loadQuizPage("bio.html", s);
-    else loadSubject(s);
+    loadSubject(btn.dataset.subject);
   };
 });
 </script>
