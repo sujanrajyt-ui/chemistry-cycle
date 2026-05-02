@@ -1289,6 +1289,13 @@ function submitQuiz(){
   });
   const pct=Math.round(correct/questions.length*100);
 
+  // Send score securely
+  fetch('/api/saveScore', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name: playerName, subject: 'Environmental Science', score: correct, total: questions.length })
+  }).catch(e => console.error(e));
+
   document.getElementById('screen-quiz').style.display='none';
   const rs=document.getElementById('screen-result');rs.style.display='block';
 
