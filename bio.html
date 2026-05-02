@@ -358,14 +358,19 @@
 
     <div class="neon-box">
       <label class="field-label" for="nameInput">📋 Enter Your Name to Begin</label>
-      <input class="name-input" id="nameInput" type="text" placeholder="Your full name…" autocomplete="off" maxlength="40"/>
+      <input class="name-input" id="nameInput" type="text" placeholder="Your full name…" autocomplete="off" maxlength="40" style="margin-bottom: 15px;"/>
+      <label class="field-label" for="chapterSelect">📚 Select Chapter</label>
+      <select class="name-input" id="chapterSelect" style="margin-bottom: 5px; font-family:'Exo 2',sans-serif; color:var(--text); background:rgba(255,255,255,.04); outline:none; border:1.5px solid rgba(0,245,212,.2); border-radius:12px; padding:16px 20px;">
+        <option value="1" style="background:#0e1528; color:var(--text);">Chapter 1 (120 Questions)</option>
+        <option value="2" style="background:#0e1528; color:var(--text);">Chapter 2 (100 Questions)</option>
+      </select>
       <button class="btn-start" id="btnStart" onclick="startQuiz()">
         <span>🚀 &nbsp;Launch Quiz</span>
       </button>
     </div>
 
     <div class="quiz-meta">
-      <div class="meta-chip"><i>📝</i> 100 Questions</div>
+      <div class="meta-chip"><i>📝</i> Multiple Chapters</div>
       <div class="meta-chip"><i>⏱️</i> 25 Minutes</div>
       <div class="meta-chip"><i>🔀</i> Shuffled Every Time</div>
       <div class="meta-chip"><i>⚡</i> Instant Feedback</div>
@@ -388,7 +393,7 @@
         <div class="prog-label">Progress — <span id="progText">0/100</span></div>
         <div class="prog-bar-bg"><div class="prog-bar-fill" id="progFill" style="width:0%"></div></div>
       </div>
-      <div class="q-counter">Q <strong id="curQNum">1</strong> / <strong>100</strong></div>
+      <div class="q-counter">Q <strong id="curQNum">1</strong> / <strong id="totalQNum">100</strong></div>
       <div class="timer-box" id="timerBox">
         <span class="timer-icon">⏱️</span>
         <span class="timer-val" id="timerVal">25:00</span>
@@ -465,7 +470,130 @@
 // ─────────────────────────────────────────────
 //  DATA
 // ─────────────────────────────────────────────
-const RAW_QUESTIONS = [
+const CHAPTER_1_QUESTIONS = [
+  {topic:"Chapter 1", q:"The nose of the redesigned Shinkanzen bullet train is inspired by", a:"Kingfisher beak", opts:["Kingfisher beak","Crane peak","Owl Peak","Herons peak"]},
+  {topic:"Chapter 1", q:"Passive cooling in sky scrapers is inspired by", a:"Termite Mounds", opts:["Termite Mounds","Ant Mounts","Spiro Mounds","Ant Movement"]},
+  {topic:"Chapter 1", q:"Belt movement of military tanks was inspired by", a:"Caterpillar Movement", opts:["Caterpillar Movement","Earthwork Mounds","Termite Movement","Butterfy Movement"]},
+  {topic:"Chapter 1", q:"Retinal prosthetic developed by scientists is approved by", a:"USFDA", opts:["USFDA","USEPA","CPCB","SPCB"]},
+  {topic:"Chapter 1", q:"The gene from ____________ was used to develop genetically modified corn", a:"Bacillus thuringiensis", opts:["Bacillus thuringiensis","Bacillus cereus","Bacillus subtilis","Bacillus Anthrasis"]},
+  {topic:"Chapter 1", q:"Protein produced by Bacillus thuringiensis which has insecticide property is", a:"Cry Protein", opts:["Cry Protein","Res Protein","Try Protein","Taf Protein"]},
+  {topic:"Chapter 1", q:"Biofertilizers have the potential to", a:"Replace chemical nitrogen and phosphorus", opts:["Replace chemical nitrogen and phosphorus","Reduce crop yield","Destimulate plant growth","Reduce soil fertility"]},
+  {topic:"Chapter 1", q:"In the case of self healing concrete the microstucture analysis can be done by", a:"SEM", opts:["SEM","XRD","FTIR","XPS"]},
+  {topic:"Chapter 1", q:"_______is a pollution control technique using a bioreactor containing living material to capture and biologically degrade pollutants.", a:"Biofiltration", opts:["Biofiltration","Bioaugmentation","Bioleaching","Biomimetics"]},
+  {topic:"Chapter 1", q:"A nanoparticle is a small particle that ranges between ____________", a:"1 to 100 nm", opts:["1 to 100 nm","1 to 100 mm","1-1000 nm","1- 10 µm"]},
+  {topic:"Chapter 1", q:"The tensile strength of carbon nanotubes is approximately ___________ times greater than that of steel of the same diameter.", a:"100", opts:["100","10","25","50"]},
+  {topic:"Chapter 1", q:"Who first used the term nanotechnology and when", a:"Nario Taniguchi, 1974", opts:["Nario Taniguchi, 1974","Richard Feyman, 1959","Erix Dexler, 1986","Alexander Flemming, 1940"]},
+  {topic:"Chapter 1", q:"The width of carbon nanotube _____________", a:"0.5-2.5nm", opts:["0.5-2.5nm","0.1-0.5nm","2.5-4.5nm","4.5-6.5 nm"]},
+  {topic:"Chapter 1", q:"If 10 hydrogen atoms are laid side by side the length of this chain would be", a:"1 nm", opts:["1 nm","7 nm","10nm","2nm"]},
+  {topic:"Chapter 1", q:"Human hair is ________ nm in size", a:"50000- 100000", opts:["50000- 100000","500- 1000","500000-1000000","50-100"]},
+  {topic:"Chapter 1", q:"The prefix nano comes from ______ word nanaos which means dwarf", a:"Greek", opts:["Greek","French","Spanish","Latin"]},
+  {topic:"Chapter 1", q:"Why is there a need to switch to organic farming?", a:"Increasing environmental pollution", opts:["Increasing environmental pollution","Increasing poverty","Increasing road accidents","Increasing population"]},
+  {topic:"Chapter 1", q:"Early detection of cancer can be achieved by", a:"AI", opts:["AI","CCD","BBD","MRIS"]},
+  {topic:"Chapter 1", q:"Prokaryotic cell size ranges from ____________ in diameter", a:"0.1 to 5.0 μm", opts:["0.1 to 5.0 μm","0.1 to 50 μm","10 to 50 μm","2 to 10μm"]},
+  {topic:"Chapter 1", q:"_____________do not have a true nucleus and membrane-bound organelles", a:"Prokaryotic cells", opts:["Prokaryotic cells","Plant cells","Animal cells","Plant cells"]},
+  {topic:"Chapter 1", q:"Mitochondria, Golgi bodies, chloroplast, and lysosomes are absent in", a:"Prokaryotic cells", opts:["Prokaryotic cells","Eukaryotic cells","Eukaryotic cells","Animal cells"]},
+  {topic:"Chapter 1", q:"____________ protein is the important constituents of eukaryotic chromosomes", a:"Histone", opts:["Histone","Cistone","Diastone","Heme"]},
+  {topic:"Chapter 1", q:"The asexually mode of division in prokaryotes is by", a:"Binary fission", opts:["Binary fission","Conjugation","Ligation","Binary fission"]},
+  {topic:"Chapter 1", q:"The sexual mode of reproduction in prokaryotes is by", a:"Conjugation", opts:["Conjugation","Binary fission","Ligation","Mitosis"]},
+  {topic:"Chapter 1", q:"The outer protective covering found in the bacterial cells which helps in attachment is _______________", a:"Capsule", opts:["Capsule","Cell membrane","Cell wall","Mitosis"]},
+  {topic:"Chapter 1", q:"__________ are involved in protein synthesis", a:"Ribosomes", opts:["Ribosomes","Lysosomes","Vacuoles","Mitochondria"]},
+  {topic:"Chapter 1", q:"______ are hair-like outgrowths that attach to the surface of other bacterial cells.", a:"Pili", opts:["Pili","Capsule","Flagella","Cilia"]},
+  {topic:"Chapter 1", q:"__________ can be used to observe virus", a:"Electron Microscope", opts:["Electron Microscope","Light Microscope","Naked eye","Fluorescent microscope"]},
+  {topic:"Chapter 1", q:"__________ possess extrachromosomal DNA known as plasmids", a:"Bacteria", opts:["Bacteria","Fungi","Yeast","Plant cell"]},
+  {topic:"Chapter 1", q:"Cell wall of bacterial cell is composed of", a:"Peptidoglycan", opts:["Peptidoglycan","Protein","Cellulose","Chitin"]},
+  {topic:"Chapter 1", q:"Chitin is the structural component present in ________ cell wall", a:"Fungal", opts:["Fungal","Bacterial","Cynobacterial","Virus"]},
+  {topic:"Chapter 1", q:"Gram Positive bacteria have thick layer of ___________", a:"Peptidoglycan", opts:["Peptidoglycan","Chitin","Mannose","Teichoic Acid"]},
+  {topic:"Chapter 1", q:"Gram negative organisms are very _____________ to antibiotics", a:"Resistant", opts:["Resistant","Susceptible","Receptive","Vulnerable"]},
+  {topic:"Chapter 1", q:"_________ content is very low in gram positive bacteria", a:"Lipid", opts:["Lipid","Carbohydrate","Protein","Fat"]},
+  {topic:"Chapter 1", q:"Cell wall thickness of gram positive organism is", a:"20- 80 nm", opts:["20- 80 nm","2- 8 nm","200- 800 nm","150- 300nm"]},
+  {topic:"Chapter 1", q:"When gram positive bacteria is stained by gram staining technique and visualized under the microscope it looks_____________", a:"Purple", opts:["Purple","Pink","Red","Brown"]},
+  {topic:"Chapter 1", q:"__________ needs to enter a living thing to perform its only function, which is to replicate", a:"Virus", opts:["Virus","Bacteria","Fungi","Yeast"]},
+  {topic:"Chapter 1", q:"___________ hijacks a person's cellular machinery to produce clones of itself", a:"Virus", opts:["Virus","Bacteria","Fungi","Yeast"]},
+  {topic:"Chapter 1", q:"Which of the following is not a typical shape of virus", a:"Trapezoid", opts:["Trapezoid","Polyhedral","Spherical","Helical"]},
+  {topic:"Chapter 1", q:"________is commonly known as black bread mold", a:"Rhizopus stolonifer", opts:["Rhizopus stolonifer","Rhizopus mucoraceae","Aspergillus niger","Candida albicans"]},
+  {topic:"Chapter 1", q:"Which of the following is not a edible mushroom", a:"Amanita Mushrooms", opts:["Amanita Mushrooms","Oyster Mushrooms","Morel Mushrooms","Portobello Mushrooms"]},
+  {topic:"Chapter 1", q:"The Greek word 'Eu' means", a:"well", opts:["well","large","round","embryo"]},
+  {topic:"Chapter 1", q:"Which of the following is a eukaryotic cell?", a:"protozoan", opts:["protozoan","virus","bacteria","None of these"]},
+  {topic:"Chapter 1", q:"Which of the following is not a eukaryotic cell?", a:"bacteria", opts:["bacteria","protozoan","fungi","animal"]},
+  {topic:"Chapter 1", q:"Which of the following is not a characteristic of eukaryotic cell?", a:"circular DNA", opts:["circular DNA","membrane enclosed nucleus","membrane bound organelles","cytoskeleton"]},
+  {topic:"Chapter 1", q:"The cell wall is present in", a:"only plant cells", opts:["only plant cells","only animal cells","plant and animal cells","protozoans"]},
+  {topic:"Chapter 1", q:"The following is not a function of the cell wall", a:"helps in water transport", opts:["helps in water transport","provides shape to cell","protection against injury","cell to cell interaction"]},
+  {topic:"Chapter 1", q:"Cell membrane is also called as", a:"Plasma membrane", opts:["Plasma membrane","Plasmalemma","Cell wall","nuclear membrane"]},
+  {topic:"Chapter 1", q:"Cell membrane is made up of", a:"phospholipid bilayer", opts:["phospholipid bilayer","phospholipid trilayer","glycolipid layer","phospholipid layer"]},
+  {topic:"Chapter 1", q:"___________ positions the organelles in a cell", a:"Cytoskeleton", opts:["Cytoskeleton","Cytoplasm","Cell membrane","Cell wall"]},
+  {topic:"Chapter 1", q:"___________ is the center of nucleus", a:"Nucleolus", opts:["Nucleolus","Nucleoplasm","Chromatin","Nuclear Membrane"]},
+  {topic:"Chapter 1", q:"The function of ribosomes is _____", a:"protein synthesis", opts:["protein synthesis","chromatin synthesis","endoplasmic reticulum synthesis","enzyme synthesis"]},
+  {topic:"Chapter 1", q:"Ribosome is attached to _____", a:"Endoplasmic reticulum", opts:["Endoplasmic reticulum","golgi complex","mitochondria","lysozome"]},
+  {topic:"Chapter 1", q:"The consistency of cytoplasm is _______", a:"semisolid", opts:["semisolid","solid","liquid","gaseous"]},
+  {topic:"Chapter 1", q:"Which of the following is not a function of cytoskeleton?", a:"Transport of ions", opts:["Transport of ions","cell shape","cell movement","positions organelles"]},
+  {topic:"Chapter 1", q:"In eukaryotic cells DNA is ________", a:"linear", opts:["linear","circular","irregular","flat"]},
+  {topic:"Chapter 1", q:"The function of the nucleolus is to produce", a:"ribosomes", opts:["ribosomes","enzymes","proteins","energy"]},
+  {topic:"Chapter 1", q:"Ribosome in found attached to __________ and ________", a:"nucleus, ER", opts:["nucleus, ER","ER, mitochondria","nucleolus, mitochondria","ribosomes, vacuoles"]},
+  {topic:"Chapter 1", q:"The function of ribosomes is _____", a:"protein synthesis", opts:["protein synthesis","energy synthesis","DNA synthesis","enzyme synthesis"]},
+  {topic:"Chapter 1", q:"The synthesis of cholesterol is done by _______", a:"smooth ER", opts:["smooth ER","Rough ER","Golgi complex","ribosomes"]},
+  {topic:"Chapter 1", q:"The molecule that functions as energy for cells is ________", a:"Adenosine Tri Phosphate", opts:["Adenosine Tri Phosphate","Adenosine Di Phosphate","Adenosine Mono Phosphate","Adenosine Phosphate"]},
+  {topic:"Chapter 1", q:"The matrix of the mitochondria in animal cells contains DNA and ________", a:"ribosomes", opts:["ribosomes","vacuoles","centrioles","centromere"]},
+  {topic:"Chapter 1", q:"The Golgi complex releases ________ for package and transport of proteins", a:"vesicles", opts:["vesicles","ribosomes","vacuoles","centrioles"]},
+  {topic:"Chapter 1", q:"____________ are called as suicide bags of the cells", a:"lysozomes", opts:["lysozomes","centrioles","vacuoles","centromeres"]},
+  {topic:"Chapter 1", q:"The cytoskeletal components are synthesized by ___________ in the animal cell", a:"centromere", opts:["centromere","ribosomes","vacuoles","vesicles"]},
+  {topic:"Chapter 1", q:"The membrane around the vacuole is called as", a:"tonoplast", opts:["tonoplast","chloroplast","leucoplast","centroplast"]},
+  {topic:"Chapter 1", q:"The shape of plant cells is __________", a:"rectangular", opts:["rectangular","circular","irregular","flat"]},
+  {topic:"Chapter 1", q:"Which of the following is not a biomolecule?", a:"Calcium sulphate", opts:["Calcium sulphate","Carbohydrates","Lipids","Nucliec Acids"]},
+  {topic:"Chapter 1", q:"Lipid is comprised on fatty acids and _____", a:"Glycerol", opts:["Glycerol","Alcohol","Hydrocarbon","Butanol"]},
+  {topic:"Chapter 1", q:"Palmatic acid is designated as ____", a:"C16", opts:["C16","C14","C18","C20"]},
+  {topic:"Chapter 1", q:"Fatty acids with no double bonds are ________", a:"Saturated", opts:["Saturated","Unsaturated","Transaturated","Cisaturated"]},
+  {topic:"Chapter 1", q:"Which of the following is not a type of lipids?", a:"Saturated lipids", opts:["Saturated lipids","Simple lipids","Complex lipids","Derived lipids"]},
+  {topic:"Chapter 1", q:"Which is a type of Derived lipids?", a:"Steroids", opts:["Steroids","Phospholipids","Glycolipids","Waxes"]},
+  {topic:"Chapter 1", q:"Phospholipids contain fatty acids, glycerol and a ___", a:"phosphate group", opts:["phosphate group","phosphorous atom","phosphoric acid","none of these"]},
+  {topic:"Chapter 1", q:"Glycolipids contain fatty acids, glycerol and ______", a:"carbohydrates", opts:["carbohydrates","glucose","sucrose","fructose"]},
+  {topic:"Chapter 1", q:"Terpenes are components of essential oils secreted by ______", a:"plamt cells", opts:["plamt cells","insects","animal cells","fungi"]},
+  {topic:"Chapter 1", q:"The component of cell membrane is ________", a:"phospholipid", opts:["phospholipid","glycolipid","sphingolipid","lipoproteins"]},
+  {topic:"Chapter 1", q:"_______ is present in the myelin sheath of nerve fibres", a:"sphingolipid", opts:["sphingolipid","phospholipid","glycolipid","lipoproteins"]},
+  {topic:"Chapter 1", q:"The general formula for carbohydrates is ___", a:"Cn(H2O)n", opts:["Cn(H2O)n","Cn+1(H2O)n","Cn(H2nO)n","Cn+1(H2nO)n2"]},
+  {topic:"Chapter 1", q:"Which of the following is not a type of complex carbohydrate?", a:"monosaccharide", opts:["monosaccharide","disaccharide","oligosaccharide","polysaccharide"]},
+  {topic:"Chapter 1", q:"Based on _________, carbohydrates are classified into aldoses and ketoses", a:"functional group", opts:["functional group","no of carbon atoms","double bonds","number of saccharides"]},
+  {topic:"Chapter 1", q:"Ribose is an example for ______", a:"pentose", opts:["pentose","hexose","triose","heptose"]},
+  {topic:"Chapter 1", q:"Starch is a _________", a:"polysaccharide", opts:["polysaccharide","oligosaccharide","monosaccharide","disaccharide"]},
+  {topic:"Chapter 1", q:"_____ sugar present in legumes etc causes flatulence", a:"raffinose", opts:["raffinose","starch","glycogen","cellulose"]},
+  {topic:"Chapter 1", q:"There are ____ amino acids divided into ___ groups", a:"20, 7", opts:["20, 7","25, 7","20, 8","25, 8"]},
+  {topic:"Chapter 1", q:"Amino acids are joined by _______ bonds", a:"peptide bond", opts:["peptide bond","phosphodiester bond","hydroxyl bond","amine bond"]},
+  {topic:"Chapter 1", q:"Which of the following is an acidic amino acid?", a:"glutamine", opts:["glutamine","glycine","alanine","leucine"]},
+  {topic:"Chapter 1", q:"Pleated sheet and alpha helix are types of ________ structures of proteins", a:"secondary", opts:["secondary","primary","tertiary","quaternary"]},
+  {topic:"Chapter 1", q:"In an alpha helix there exists ___ amino acids per turn", a:"3.6", opts:["3.6","4","3.8","3"]},
+  {topic:"Chapter 1", q:"Beta pleated sheets are joined on their sides by ________ bonds", a:"hydrogen", opts:["hydrogen","hydroxyl","amine","peptide"]},
+  {topic:"Chapter 1", q:"__________ strengthens bones and skin", a:"Collagen", opts:["Collagen","actin","myosin","Raffinose"]},
+  {topic:"Chapter 1", q:"Actin and myosin are the proteins involved in", a:"muscle contraction", opts:["muscle contraction","blood circulation","immune development","bone strengthening"]},
+  {topic:"Chapter 1", q:"Antibodies are _______", a:"proteins", opts:["proteins","fats","carbohydrates","lipids"]},
+  {topic:"Chapter 1", q:"The process of synthesis of proteins from RNA is _______", a:"translation", opts:["translation","transcription","replication","transfusion"]},
+  {topic:"Chapter 1", q:"In RNA, the nitrogenous base __________ is replaced by uracil", a:"thymine", opts:["thymine","adenine","guanine","cytosine"]},
+  {topic:"Chapter 1", q:"________ attached to the phosphate group is called nucleotide in case of nucleic acids", a:"Nucleoside", opts:["Nucleoside","Base","Sugar","Phosphodiester bond"]},
+  {topic:"Chapter 1", q:"Adenine: Guanine:: Cytosine:________ in DNA", a:"Thymine", opts:["Thymine","Uracil","Purine","Pyrimidine"]},
+  {topic:"Chapter 1", q:"The strands of DNA run _______ to each other", a:"Anti-parellel", opts:["Anti-parellel","obtuse","parellel","horizontal"]},
+  {topic:"Chapter 1", q:"The nitrogenous bases in DNA pair by _________", a:"hydrogen bonds", opts:["hydrogen bonds","phosphodiester bonds","peptide bonds","phosphotriester bonds"]},
+  {topic:"Chapter 1", q:"________ carries the genetic information of DNA to be used for protein synthesis", a:"messenger RNA", opts:["messenger RNA","transfer RNA","ribosomal RNA","information RNA"]},
+  {topic:"Chapter 1", q:"What is not produced during photosynthesis?", a:"Carbon dioxide", opts:["Carbon dioxide","Oxygen","Organic compounds","Glucose"]},
+  {topic:"Chapter 1", q:"What is the source of energy for photosynthesis to take place?", a:"Light", opts:["Light","ATP","Water","Oxygen"]},
+  {topic:"Chapter 1", q:"Calvin's cycle takes place in the _______", a:"Stroma", opts:["Stroma","Thylakoids","Grana","Chlorophyll"]},
+  {topic:"Chapter 1", q:"Photosynthesis doesn't depend on _______", a:"Chlorophyll content", opts:["Chlorophyll content","Temperature","Light intensity","Carbon dioxide"]},
+  {topic:"Chapter 1", q:"ATP is a ________ derivative", a:"Nucleotide", opts:["Nucleotide","Nucleoside","Protein","Lipid"]},
+  {topic:"Chapter 1", q:"_________ of the ATP contains large amount of energy in the form of high energy electrons", a:"Phosphate bonds", opts:["Phosphate bonds","Sugar","Nitrogenous base","Nucleotide"]},
+  {topic:"Chapter 1", q:"The process by which cell breaks down glucose to give ATP is _______", a:"Respiration", opts:["Respiration","Photosynthesis","Mitosis","Meiosis"]},
+  {topic:"Chapter 1", q:"Electron transport occurs in ______ of mitochondria", a:"Cristae", opts:["Cristae","Matrix","Cytoplasm","Grana"]},
+  {topic:"Chapter 1", q:"In aerobic respiration, one glucose molecule releases _____ molecules of ATP", a:"38", opts:["38","2","22","18"]},
+  {topic:"Chapter 1", q:"In anaerobic respiration, one glucose releases _ molecules of ATP", a:"2", opts:["2","38","22","18"]},
+  {topic:"Chapter 1", q:"The function of DNA polymerase is ______", a:"To join nucleotides to form new DNA strand", opts:["To join nucleotides to form new DNA strand","Break hydrogen bonds","Unwind DNA strand","Replicate DNA"]},
+  {topic:"Chapter 1", q:"Glucose breaks down to form two pyruvate molecules in _", a:"Glycolysis", opts:["Glycolysis","Krebs cycle","Electron transport chain","Photosynthesis"]},
+  {topic:"Chapter 1", q:"In krebs cycle pyruvate is broken down to give hydrogen and ________", a:"Carbon dioxide", opts:["Carbon dioxide","Oxygen","ATP","Energy"]},
+  {topic:"Chapter 1", q:"DNA replication is forming multiple copies of _______", a:"Chromosomes", opts:["Chromosomes","RNA","Genetic material","Heredity"]},
+  {topic:"Chapter 1", q:"Which of the following is not a step in mitosis?", a:"Interphase", opts:["Interphase","Prophase","Metaphase","Anaphase"]},
+  {topic:"Chapter 1", q:"Cell grows and prepares for mitosis in ________ step", a:"Interphase", opts:["Interphase","Prophase","Metaphase","Anaphase"]},
+  {topic:"Chapter 1", q:"After cell division the divided cells are referred to as _______ cells", a:"Daughter", opts:["Daughter","Son","Offspring","Product"]},
+  {topic:"Chapter 1", q:"Chromatids are joined by ______ in prophase", a:"Centromeres", opts:["Centromeres","Lysosomes","Microtubules","Cytoskeleton"]},
+  {topic:"Chapter 1", q:"In cytokinesis ________", a:"Two daughter cells are formed", opts:["Two daughter cells are formed","Two chromosomes are formed","Chromatids divide","Spindle fibres are formed"]},
+  {topic:"Chapter 1", q:"In photosynthesis raw materials are _______", a:"Carbon dioxide and water", opts:["Carbon dioxide and water","Oxygen and water","Hydrogen and water","Carbon dioxide and light"]},
+];
+
+const CHAPTER_2_QUESTIONS = [
   // Topic 6
   {topic:"Topic 6: Composites & Termite Mounds",q:"Composites are",a:"Two or more constituent materials",opts:["Two or more constituent materials","Materials with similar chemical properties","Materials with similar physical properties","Only one material with different shapes, colours"]},
   {topic:"Topic 6: Composites & Termite Mounds",q:"This is NOT a beneficial aspect of composites",a:"Heavy weight",opts:["Heavy weight","Corrosion resistance","High durability","Design flexibility"]},
@@ -627,7 +755,10 @@ function startQuiz(){
     return;
   }
   playerName=n;
-  questions = shuffle(RAW_QUESTIONS).map(q=>({...q,opts:shuffle(q.opts)}));
+  const chapter = document.getElementById("chapterSelect").value;
+  let selectedQuestions = chapter === "1" ? CHAPTER_1_QUESTIONS : CHAPTER_2_QUESTIONS;
+  questions = shuffle(selectedQuestions).map(q=>({...q,opts:shuffle(q.opts)}));
+  document.getElementById("totalQNum").textContent = questions.length;
   answers={};currentIdx=0;secondsLeft=1500;quizSubmitted=false;reviewVisible=false;
 
   document.getElementById('screen-landing').style.display='none';
@@ -802,7 +933,7 @@ function submitQuiz(){
   else if(pct>=50){trophy='🥉';title='Good Effort!';}
   document.getElementById('trophyEmoji').textContent=trophy;
   document.getElementById('resultTitle').textContent=title;
-  document.getElementById('resultName').textContent=`${playerName} · ${correct}/100 Correct`;
+  document.getElementById('resultName').textContent=`${playerName} · ${correct}/${questions.length} Correct`;
   document.getElementById('statCorrect').textContent=correct;
   document.getElementById('statIncorrect').textContent=incorrect;
   document.getElementById('statSkipped').textContent=skipped;
