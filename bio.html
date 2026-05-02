@@ -371,7 +371,7 @@
 
     <div class="quiz-meta">
       <div class="meta-chip"><i>📝</i> Multiple Chapters</div>
-      <div class="meta-chip"><i>⏱️</i> 25 Minutes</div>
+      <div class="meta-chip"><i>⏱️</i> 60 Minutes</div>
       <div class="meta-chip"><i>🔀</i> Shuffled Every Time</div>
       <div class="meta-chip"><i>⚡</i> Instant Feedback</div>
     </div>
@@ -396,7 +396,7 @@
       <div class="q-counter">Q <strong id="curQNum">1</strong> / <strong id="totalQNum">100</strong></div>
       <div class="timer-box" id="timerBox">
         <span class="timer-icon">⏱️</span>
-        <span class="timer-val" id="timerVal">25:00</span>
+        <span class="timer-val" id="timerVal">60:00</span>
       </div>
     </div>
 
@@ -713,7 +713,7 @@ let questions = [];
 let answers = {};        // index -> chosen answer text
 let currentIdx = 0;
 let timerInterval = null;
-let secondsLeft = 1500;  // 25 min
+let secondsLeft = 3600;  // 60 min
 let startTime = null;
 let quizSubmitted = false;
 let reviewVisible = false;
@@ -759,7 +759,7 @@ function startQuiz(){
   let selectedQuestions = chapter === "1" ? CHAPTER_1_QUESTIONS : CHAPTER_2_QUESTIONS;
   questions = shuffle(selectedQuestions).map(q=>({...q,opts:shuffle(q.opts)}));
   document.getElementById("totalQNum").textContent = questions.length;
-  answers={};currentIdx=0;secondsLeft=1500;quizSubmitted=false;reviewVisible=false;
+  answers={};currentIdx=0;secondsLeft=3600;quizSubmitted=false;reviewVisible=false;
 
   document.getElementById('screen-landing').style.display='none';
   document.getElementById('screen-result').style.display='none';
@@ -910,7 +910,7 @@ function navigate(dir){
 function submitQuiz(){
   clearInterval(timerInterval);
   quizSubmitted=true;
-  const timeTaken=1500-secondsLeft;
+  const timeTaken=3600-secondsLeft;
   const tm=Math.floor(timeTaken/60),ts=timeTaken%60;
 
   let correct=0,incorrect=0,skipped=0;
