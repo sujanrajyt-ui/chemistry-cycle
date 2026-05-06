@@ -658,6 +658,7 @@ let reviewVisible = false;
 // ─────────────────────────────────────────────
 (function createStars(){
   const c = document.getElementById('stars');
+  if(!c) return;
   for(let i=0;i<160;i++){
     const s = document.createElement('div');
     s.className='star';
