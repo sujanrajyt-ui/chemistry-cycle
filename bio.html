@@ -298,6 +298,7 @@
       <select class="select-input" id="chapterSelect" class="select-input">
         <option value="1" >Chapter 1 (120 Questions)</option>
         <option value="2" >Chapter 2 (100 Questions)</option>
+        <option value="3" >Chapter 3 (50 Questions)</option>
       </select>
       <button class="btn-start" id="btnStart" onclick="startQuiz()">
         <span>🚀 &nbsp;Launch Quiz</span>
@@ -643,6 +644,59 @@ const CHAPTER_2_QUESTIONS = [
 // ─────────────────────────────────────────────
 //  STATE
 // ─────────────────────────────────────────────
+const CHAPTER_3_QUESTIONS = [
+  {topic:"Topic 11: Recent Scenarios in Environment",q:"Name of the first biodegradable leather is",a:"Desserto",opts:["Desserto", "Adriano Di Marti", "Bionic", "Exhale"]},
+  {topic:"Topic 11: Recent Scenarios in Environment",q:"The first biodegradable leather was developed in",a:"Mexico",opts:["Mexico", "USA", "Canada", "Brazil"]},
+  {topic:"Topic 11: Recent Scenarios in Environment",q:"The company which patented and manufacturing first biodegradable leather",a:"Adriano Di Marti",opts:["Adriano Di Marti", "Desserto", "Lakhaani - Arman", "Prickly pear"]},
+  {topic:"Topic 11: Recent Scenarios in Environment",q:"The cactus from which leather is manufactured is also known as",a:"Prickly pear",opts:["Prickly pear", "Breathing Leaf", "Arborea", "Indian Cactus"]},
+  {topic:"Topic 11: Recent Scenarios in Environment",q:"What motivated the inventors to design the biodegradable leather?",a:"Environmental Pollution",opts:["Environmental Pollution", "Large land requirement for leather industry", "Surplus production of Cactus", "Lot of arable land available"]},
+  {topic:"Topic 11: Recent Scenarios in Environment",q:"Whether biodegradable leather be used in fabric manufacturing?",a:"Yes, without any modification",opts:["Yes, without any modification", "Yes, but chemical treatment is necessary", "Only limited fabrics can be designed", "No, it cannot be used"]},
+  {topic:"Topic 11: Recent Scenarios in Environment",q:"The carbon sequestering capacity of Cactus used for leather: Absorbs about 8000 tons per year of CO2, whereas it produces CO2 at the rate of:",a:"15 tons per year",opts:["15 tons per year", "5000 tons per year", "8000 tons per year", "15300 tons per year"]},
+  {topic:"Topic 11: Recent Scenarios in Environment",q:"To produce 1 linear metre of biodegradable leather, how many fully grown cactus leaves are required?",a:"3",opts:["3", "1", "30", "10"]},
+  {topic:"Topic 11: Recent Scenarios in Environment",q:"To manufacture leather from Cactus, full Cactus plant need to be harvested.",a:"No, only fully grown leaves are removed leaving the plant intact with young leaves",opts:["No, only fully grown leaves are removed leaving the plant intact with young leaves", "No, all the leaves are removed but plant without leaves is left", "Yes, full plant is removed but the small cutting from old plant is cultivated again", "Yes, plant is completely harvested and new plants are cultivated again each year"]},
+  {topic:"Topic 11: Recent Scenarios in Environment",q:"Which of these is TRUE for the biodegradable leather?",a:"There is No Water pollution with Chromium salts",opts:["There is No Water pollution with Chromium salts", "Consumes lot of water for processing", "Consumes lot of energy for drying of cactus powder", "Emits more carbon to environment"]},
+  {topic:"Topic 11: Recent Scenarios in Environment",q:"The life cycle analysis of different types of leather manufacturing indicates:",a:"Biodegradable leather is more sustainable",opts:["Biodegradable leather is more sustainable", "Animal leather requires lesser energy and more efficient", "PU leather is more sturdy and better than all other leathers", "Leather types cannot be compared using LCA"]},
+  {topic:"Topic 11: Recent Scenarios in Environment",q:"GHG Carbon emission in which of the following manufacturing process is Lowest?",a:"Desserto Leather",opts:["Desserto Leather", "PU Leather", "Animal Leather", "Artificial Leather"]},
+  {topic:"Topic 11: Recent Scenarios in Environment",q:"What is the name of bionic chandelier designed by Julian Melchiorri?",a:"Exhale",opts:["Exhale", "Inhale", "Arborea", "Breathing leaf"]},
+  {topic:"Topic 11: Recent Scenarios in Environment",q:"What does the bionic chandelier do?",a:"Purifies the indoor air by producing oxygen",opts:["Purifies the indoor air by producing oxygen", "Produces natural glowing light", "Decreases moisture content of air", "Decreases intensity of light"]},
+  {topic:"Topic 11: Recent Scenarios in Environment",q:"In the bionic chandelier designed by Julian, how many leaves are there?",a:"70",opts:["70", "numerous", "3", "24"]},
+  {topic:"Topic 11: Recent Scenarios in Environment",q:"What does the bionic chandelier contain?",a:"Photosynthetic algae",opts:["Photosynthetic algae", "Artificial air purifier", "Light emitting fluorospores", "It is just a metallic structure with varying green shades"]},
+  {topic:"Topic 11: Recent Scenarios in Environment",q:"Why the bionic chandelier is connected to a life support device?",a:"To provide nutrient to algae",opts:["To provide nutrient to algae", "To remove the odor captured by air purifier", "To replenish the concentration of fluorospores", "There is no such unit attached to bionic chandelier"]},
+  {topic:"Topic 11: Recent Scenarios in Environment",q:"Bionic chandelier establishes which new type of symbiotic relationship between",a:"Object and Human",opts:["Object and Human", "Object and Environment", "Algae and Light", "Human and Environment"]},
+  {topic:"Topic 11: Recent Scenarios in Environment",q:"Which byproduct of the oil refinery is used for making of roads?",a:"Bitumen",opts:["Bitumen", "Asphalt", "Coal", "Kerosene"]},
+  {topic:"Topic 11: Recent Scenarios in Environment",q:"Bitumen in the asphalt act as a",a:"Binder material",opts:["Binder material", "Base material", "Coloring material", "Bitumen is not a part of asphalt"]},
+  {topic:"Topic 11: Recent Scenarios in Environment",q:"Identify the correct order of waste plastic processing before it is used in road construction along with asphalt.",a:"Clean - Dry - Shred - Melt",opts:["Clean - Dry - Shred - Melt", "Dry - Shred - Clean - Melt", "Clean - Melt - Dry - Shred", "Melt - Dry - Clean - Shred"]},
+  {topic:"Topic 11: Recent Scenarios in Environment",q:"Which of the following is NOT TRUE about Dr. Rajagopalan Vasudevan.",a:"Information missing",opts:["Information missing", "Option B", "Option C", "Option D"]},
+  {topic:"Topic 11: Recent Scenarios in Environment",q:"Which of these is the natural alternative to Bitumen as per current findings?",a:"Lignin",opts:["Lignin", "Cactus powder", "PET or PP or HDPE", "Binder Enzymes"]},
+  {topic:"Topic 11: Recent Scenarios in Environment",q:"Which process is currently demonstrated to use Lignin as binding agent in road construction?",a:"Pyrolysis",opts:["Pyrolysis", "Photosynthesis", "Metabolism", "Hydrolysis"]},
+  {topic:"Topic 11: Recent Scenarios in Environment",q:"Whether natural lignin is currently demonstrated as a complete replacement for Bitumen?",a:"No, 50-50 mix of Lignin and Bitumen is demonstrated",opts:["No, 50-50 mix of Lignin and Bitumen is demonstrated", "Yes, 100% replacement has been demonstrated", "No, about 10% of Bitumen can be replaced.", "No, lignin is not a suitable alternative to bitumen."]},
+  {topic:"Topic 12: Recent Scenarios in Agriculture",q:"The Solar powered pest control system was developed at",a:"IIT Kharagpur",opts:["IIT Kharagpur", "IIT Kanpur", "IIT Madras", "Thyagarajar College of Engg"]},
+  {topic:"Topic 12: Recent Scenarios in Agriculture",q:"In solar powered pest control system, what device is used to pressurize the liquid to be dispersed?",a:"DC Motor",opts:["DC Motor", "AC Motor", "Solar Panel", "Nozzles"]},
+  {topic:"Topic 12: Recent Scenarios in Agriculture",q:"How larger width of spray area is achieved in solar powered pest control system?",a:"Use of multiple nozzles on boom",opts:["Use of multiple nozzles on boom", "Use of multiple DC motors", "Use of large solar panels", "Use of low viscosity pesticides"]},
+  {topic:"Topic 12: Recent Scenarios in Agriculture",q:"The administrator of solar pest control unit is required to",a:"Monitor the spray module movement",opts:["Monitor the spray module movement", "Carry the pesticide backpack", "Spray the pesticide using nozzle module", "Need not be present at the field"]},
+  {topic:"Topic 12: Recent Scenarios in Agriculture",q:"Development of indigenous solar pest control system comes under which type of Govt of India initiative?",a:"Atmanirbhar Bharat Abhiyan",opts:["Atmanirbhar Bharat Abhiyan", "Skill India", "Pradhan Mantri Jan Dhan Yojana", "Stand Up India Scheme"]},
+  {topic:"Topic 12: Recent Scenarios in Agriculture",q:"Novel BioDCM nanoparticle based pesticide can protect agricultural crops from the infection of",a:"Both bacterial & fungal",opts:["Both bacterial & fungal", "Bacterial only", "Fungal only", "None"]},
+  {topic:"Topic 12: Recent Scenarios in Agriculture",q:"The major or leading institutes that developed BioDCM nanoparticles based pesticide",a:"IIT Kanpur",opts:["IIT Kanpur", "IIT Kharagpur", "IIT Madras", "IIT Bombay"]},
+  {topic:"Topic 12: Recent Scenarios in Agriculture",q:"The fullform of the pesticide BioDCM",a:"Bio-Degradable-Carbonoid-Metabolite",opts:["Bio-Degradable-Carbonoid-Metabolite", "Bio-Degradable-Carbon-Metal complex", "Biologically Designed Commercial Metabolite", "Biologically Designed Chemical Molecule"]},
+  {topic:"Topic 12: Recent Scenarios in Agriculture",q:"The pesticide BioDCM is extracted from",a:"Trichoderma asperellum",opts:["Trichoderma asperellum", "Xanthomonas oryzae", "Bacillus anthracis", "Arabidopsis thaliana"]},
+  {topic:"Topic 12: Recent Scenarios in Agriculture",q:"The pesticide BioDCM is extracted from which of these?",a:"Fungal strain",opts:["Fungal strain", "Bacterial strain", "Virus", "Chemically synthesized"]},
+  {topic:"Topic 12: Recent Scenarios in Agriculture",q:"Trichoderma asperellum is a",a:"Common soil fungus",opts:["Common soil fungus", "Common soil bacterium", "Viral agent", "Crop variety"]},
+  {topic:"Topic 12: Recent Scenarios in Agriculture",q:"If you need to measure water potential in crop leaves using their turgor pressure, then which of these sensors are more useful?",a:"Mechanical sensors",opts:["Mechanical sensors", "Acoustic sensors", "Optical sensors", "Chemical sensors"]},
+  {topic:"Topic 12: Recent Scenarios in Agriculture",q:"If you require Geometric structure of plant which sensor is more useful?",a:"Acoustic sensors",opts:["Acoustic sensors", "Mechanical sensors", "Optical sensors", "Chemical sensors"]},
+  {topic:"Topic 12: Recent Scenarios in Agriculture",q:"Which of these sensors use their own light for measurement?",a:"Active optical sensor",opts:["Active optical sensor", "Passive optical sensor", "Acoustic sensors", "Mechanical sensors"]},
+  {topic:"Topic 12: Recent Scenarios in Agriculture",q:"Which of these sensors are useful to measure nitrogen content in crops?",a:"Optical sensors",opts:["Optical sensors", "Chemical sensors", "Mechanical sensors", "Acoustic sensors"]},
+  {topic:"Topic 13: Recent Scenarios in Medical Technology",q:"A device that provides \"real-time\" glucose readings and data about trends in glucose levels",a:"Continuous Glucose Monitor",opts:["Continuous Glucose Monitor", "Canadian Glucose Machine", "Glucometer", "Diabetescare"]},
+  {topic:"Topic 13: Recent Scenarios in Medical Technology",q:"Why one should use GSM",a:"To Monitor Blood Glucose level",opts:["To Monitor Blood Glucose level", "To monitor Genetic Syndrome", "To inject Insulin", "To assess blood cholesterol level"]},
+  {topic:"Topic 13: Recent Scenarios in Medical Technology",q:"Sensor life of Freestyle Navigator is",a:"5 days",opts:["5 days", "6 days", "10 days", "8 days"]},
+  {topic:"Topic 13: Recent Scenarios in Medical Technology",q:"DexCom 7 Plus needs calibration",a:"every 12 hours",opts:["every 12 hours", "every 12 days", "every 15 days", "every 15 hours"]},
+  {topic:"Topic 13: Recent Scenarios in Medical Technology",q:"In 1985 a ROBOT, the PUMA 560, was used to place a needle for a biopsy using CT guidance.",a:"Brain",opts:["Brain", "Heart", "Lung", "Skin"]},
+  {topic:"Topic 13: Recent Scenarios in Medical Technology",q:"Robots were first introduced in _____ with the first laparoscopic surgery.",a:"1987",opts:["1987", "1897", "1988", "2001"]},
+  {topic:"Topic 13: Recent Scenarios in Medical Technology",q:"Robotic surgery means",a:"Microsurgery in which the surgeon performs surgery by manipulating the hands of a robot",opts:["Microsurgery in which the surgeon performs surgery by manipulating the hands of a robot", "Surgery done by Robot with programmed software", "Microsurgery done remotely without any physical presence", "Surgery done for Robots in micro level"]},
+  {topic:"Topic 13: Recent Scenarios in Medical Technology",q:"Retractor system present in ______ type of Robot",a:"Passive",opts:["Passive", "Active", "Both Passive and Active", "Manual"]},
+  {topic:"Topic 13: Recent Scenarios in Medical Technology",q:"One of the following is name of a Robot used in Medical Technology",a:"PUMA 560",opts:["PUMA 560", "ROMA 560", "DOLLY 650", "ROBO 110"]},
+  {topic:"Topic 13: Recent Scenarios in Medical Technology",q:"DexCom 7 Plus is a",a:"CGM available in the Market",opts:["CGM available in the Market", "Robot used in Brain surgery", "Monitoring system for heart beat", "Computer software for Medical technology"]},
+];
+
 let playerName = '';
 let questions = [];
 let answers = {};        // index -> chosen answer text
@@ -692,7 +746,7 @@ function startQuiz(){
   }
   playerName=n;
   const chapter = document.getElementById("chapterSelect").value;
-  let selectedQuestions = chapter === "1" ? CHAPTER_1_QUESTIONS : CHAPTER_2_QUESTIONS;
+  let selectedQuestions = chapter === "1" ? CHAPTER_1_QUESTIONS : chapter === "2" ? CHAPTER_2_QUESTIONS : CHAPTER_3_QUESTIONS;
   questions = shuffle(selectedQuestions).map(q=>({...q,opts:shuffle(q.opts)}));
   document.getElementById("totalQNum").textContent = questions.length;
   answers={};currentIdx=0;secondsLeft=3600;quizSubmitted=false;reviewVisible=false;
