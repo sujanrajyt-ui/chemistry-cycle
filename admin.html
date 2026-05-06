@@ -334,8 +334,8 @@ loadScoresBtn.addEventListener('click', async () => {
     }
 
     // Calculate counts
-    const bioCount = scores.filter(s => s.subject === 'Biology for Engineers').length;
-    const essCount = scores.filter(s => s.subject === 'Environmental Science').length;
+    const bioCount = scores.filter(s => s.subject.includes('Biology')).length;
+    const essCount = scores.filter(s => s.subject.includes('Environmental')).length;
     
     document.getElementById('bioCount').textContent = bioCount;
     document.getElementById('essCount').textContent = essCount;
