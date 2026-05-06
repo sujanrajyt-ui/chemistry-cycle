@@ -123,14 +123,7 @@ async function loadSubject(subject){
           contentArea.innerHTML = `<div class="loader"></div>`;
           try {
             const file = subject === 'ESS' ? 'ess.html' : 'bio.html';
-            const quizRes = await fetch(file);
-            const quizHtml = await quizRes.text();
-            contentArea.innerHTML = quizHtml;
-            contentArea.querySelectorAll("script").forEach(oldScript=>{
-              const s = document.createElement("script");
-              s.textContent = oldScript.textContent;
-              document.body.appendChild(s);
-            });
+            contentArea.innerHTML = `<iframe src="${file}" style="width:100%; height:80vh; min-height: 600px; border:none; border-radius:12px; background: var(--bg);"></iframe>`;
           } catch(err) {
             contentArea.innerHTML = `<p style="color: #ef4444;">Error loading quiz.</p>`;
           }
