@@ -166,7 +166,7 @@
   .prog-bar-fill { height: 100%; background: var(--primary); transition: width 0.3s ease; }
 
   .timer-box {
-    display: flex; align-items: center; gap: 8px; background: var(--bg);
+    display: none; align-items: center; gap: 8px; background: var(--bg);
     border: 1px solid var(--card-border); border-radius: 8px; padding: 8px 12px; font-weight: 600;
   }
   .timer-box.warn { color: var(--danger); border-color: var(--danger); background: var(--danger-bg); }
@@ -306,7 +306,6 @@
 
     <div class="quiz-meta">
       <div class="meta-chip"><i>📝</i> Multiple Chapters</div>
-      <div class="meta-chip"><i>⏱️</i> 60 Minutes</div>
       <div class="meta-chip"><i>📚</i> 2 Units</div>
       <div class="meta-chip"><i>🔀</i> Shuffled Every Time</div>
       <div class="meta-chip"><i>⚡</i> Instant Feedback</div>
@@ -9584,12 +9583,7 @@ function startQuiz(){
   document.getElementById('avatarInitial').textContent=playerName[0].toUpperCase();
 
   startTime=Date.now();
-  clearInterval(timerInterval);
-  timerInterval=setInterval(()=>{
-    secondsLeft--;
-    updateTimerUI();
-    if(secondsLeft<=0){clearInterval(timerInterval);submitQuiz();}
-  },1000);
+  /* Timer Disabled */
   renderQuestion();
 }
 
@@ -9703,7 +9697,7 @@ function showConfirm(){
 function submitQuiz(){
   const ov=document.getElementById('confirmOverlay');if(ov)ov.remove();
   clearInterval(timerInterval);quizSubmitted=true;
-  const timeTaken=TOTAL_SECS-secondsLeft;
+  const timeTaken=startTime ? Math.floor((Date.now()-startTime)/1000) : 0;
   const tm=Math.floor(timeTaken/60),ts=timeTaken%60;
 
   let correct=0,incorrect=0,skipped=0;
