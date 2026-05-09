@@ -38,6 +38,7 @@
   <button class="btn" data-subject="BIO">BIO</button>
   <button class="btn" data-subject="ADLD">ADLD</button>
   <button class="btn" data-subject="BE">BE</button>
+  <button class="btn" data-subject="UHV">UHV</button>
 </div>
 
 <div id="bucketsContainer" class="buckets-container"></div>
@@ -67,7 +68,7 @@ function createBucket(subject) {
   bucket.className = 'files-box bucket';
   bucket.innerHTML = `
     <div style="display:flex; justify-content:space-between; align-items:center; border-bottom: 2px solid rgba(239, 68, 68, 0.1); padding-bottom: 1rem; margin-bottom: 1.5rem;">
-      <h3 style="margin:0; padding:0; border:none;">${subject} ${subject === 'ESS' || subject === 'BIO' ? 'Quiz' : 'Notes'}</h3>
+      <h3 style="margin:0; padding:0; border:none;">${subject} ${['ESS', 'BIO', 'UHV'].includes(subject) ? 'Quiz' : 'Notes'}</h3>
       <button class="close-btn" onclick="document.getElementById('bucket-${subject}').style.display='none'">✖</button>
     </div>
     <div class="bucket-content"><div class="loader"></div></div>
@@ -96,7 +97,7 @@ async function loadSubject(subject){
 
     let html = '';
     
-    if (subject === 'ESS' || subject === 'BIO') {
+    if (['ESS', 'BIO', 'UHV'].includes(subject)) {
       html += `<button id="quiz-btn-${subject}" class="btn" style="margin-bottom:1.5rem; width:100%; background:var(--primary); color:white; border:none; box-shadow: 0 4px 10px rgba(239, 68, 68, 0.3);">Attempt ${subject} Quiz</button>`;
     }
 
@@ -116,13 +117,15 @@ async function loadSubject(subject){
     
     contentArea.innerHTML = html;
 
-    if (subject === 'ESS' || subject === 'BIO') {
+    if (['ESS', 'BIO', 'UHV'].includes(subject)) {
       const quizBtn = document.getElementById(`quiz-btn-${subject}`);
       if (quizBtn) {
         quizBtn.onclick = async () => {
           contentArea.innerHTML = `<div class="loader"></div>`;
           try {
-            const file = subject === 'ESS' ? 'ess.html' : 'bio.html';
+            let file = 'bio.html';
+            if (subject === 'ESS') file = 'ess.html';
+            if (subject === 'UHV') file = 'uhv.html';
             contentArea.innerHTML = `<iframe src="${file}" style="width:100%; height:80vh; min-height: 600px; border:none; border-radius:12px; background: var(--bg);"></iframe>`;
           } catch(err) {
             contentArea.innerHTML = `<p style="color: #ef4444;">Error loading quiz.</p>`;
