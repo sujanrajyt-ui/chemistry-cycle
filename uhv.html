@@ -7,375 +7,6 @@
 
 <!-- Vercel Web Analytics -->
 <script>
-  window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
-</script>
-<script defer src="/_vercel/insights/script.js"></script>
-
-<link href="https://fonts.googleapis.com/css2-family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
-<style>
-  :root {
-    --bg: #f9fafb;
-    --card: #ffffff;
-    --card-border: #e5e7eb;
-    --text: #111827;
-    --text-muted: #6b7280;
-    --primary: #8b5cf6; /* Purple for UHV */
-    --primary-hover: #7c3aed;
-    --success: #10b981;
-    --success-bg: #d1fae5;
-    --danger: #ef4444;
-    --danger-bg: #fee2e2;
-    --warning: #f59e0b;
-    --radius: 16px;
-    --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-  }
-
-  [data-theme="dark"] {
-    --bg: #111827;
-    --card: #1f2937;
-    --card-border: #374151;
-    --text: #f9fafb;
-    --text-muted: #9ca3af;
-    --primary: #a78bfa;
-    --primary-hover: #c4b5fd;
-    --success: #10b981;
-    --success-bg: rgba(16, 185, 129, 0.2);
-    --danger: #ef4444;
-    --danger-bg: rgba(239, 68, 68, 0.2);
-    --warning: #f59e0b;
-    --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5), 0 4px 6px -2px rgba(0, 0, 0, 0.25);
-  }
-
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  body {
-    min-height: 100vh;
-    background: var(--bg);
-    font-family: 'Inter', system-ui, -apple-system, sans-serif;
-    color: var(--text);
-    transition: background 0.3s, color 0.3s;
-  }
-  
-  .theme-toggle {
-    position: absolute;
-    top: 20px;
-    right: 20px;
-    background: var(--card);
-    border: 1px solid var(--card-border);
-    color: var(--text);
-    border-radius: 50%;
-    width: 44px;
-    height: 44px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    box-shadow: var(--shadow);
-    transition: all 0.2s;
-    font-size: 1.2rem;
-    z-index: 100;
-  }
-  .theme-toggle:hover { transform: scale(1.05); }
-
-  .app {
-    position: relative;
-    z-index: 1;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 40px 20px;
-  }
-
-  #screen-landing { text-align: center; animation: fadeIn 0.5s ease; }
-  @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-  
-  .logo-badge {
-    display: inline-flex; align-items: center; gap: 8px;
-    background: var(--card); border: 1px solid var(--card-border);
-    border-radius: 20px; padding: 6px 16px; font-size: 0.85rem;
-    font-weight: 600; color: var(--primary); margin-bottom: 24px;
-    box-shadow: var(--shadow);
-  }
-  
-  h1.main-title {
-    font-size: clamp(2rem, 5vw, 3.5rem); font-weight: 800;
-    line-height: 1.2; margin-bottom: 12px; color: var(--text);
-    letter-spacing: -0.02em;
-  }
-  
-  .subtitle { font-size: 1.1rem; color: var(--text-muted); margin-bottom: 40px; }
-
-  .clean-box {
-    background: var(--card); border: 1px solid var(--card-border);
-    border-radius: var(--radius); padding: 32px 40px; max-width: 440px;
-    width: 100%; margin: 0 auto; box-shadow: var(--shadow); text-align: left;
-  }
-
-  .field-label { display: block; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); margin-bottom: 8px; }
-
-  .name-input, .select-input {
-    width: 100%; padding: 12px 16px; background: var(--bg);
-    border: 1px solid var(--card-border); border-radius: 8px;
-    color: var(--text); font-family: inherit; font-size: 1rem;
-    outline: none; transition: all 0.2s; margin-bottom: 20px;
-  }
-  .name-input:focus, .select-input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.2); }
-
-  .btn-start, .btn-nav, .btn-action, .cbtn-yes, .cbtn-no {
-    width: 100%; padding: 14px; font-family: inherit; font-size: 1rem;
-    font-weight: 600; background: var(--primary); color: #ffffff;
-    border: none; border-radius: 8px; cursor: pointer; transition: all 0.2s;
-    display: flex; align-items: center; justify-content: center; gap: 8px;
-  }
-  .btn-start:hover, .btn-nav.btn-next:hover, .btn-review:hover, .cbtn-yes:hover { background: var(--primary-hover); }
-  .btn-nav, .btn-action { width: auto; padding: 10px 20px; }
-  .btn-prev, .btn-retake, .cbtn-no { background: var(--bg); color: var(--text); border: 1px solid var(--card-border); }
-  .btn-prev:hover, .btn-retake:hover, .cbtn-no:hover { background: var(--card-border); }
-  .btn-submit { background: var(--warning); color: #fff; }
-  .btn-submit:hover { background: #d97706; }
-
-  .quiz-meta { display: flex; gap: 12px; justify-content: center; margin-top: 32px; flex-wrap: wrap; }
-  .meta-chip {
-    display: flex; align-items: center; gap: 6px; background: var(--card);
-    border: 1px solid var(--card-border); border-radius: 20px; padding: 6px 14px;
-    font-size: 0.85rem; color: var(--text-muted); font-weight: 500;
-  }
-
-  #screen-quiz { display: none; width: 100%; max-width: 720px; margin: 0 auto; }
-
-  .hud {
-    display: flex; align-items: center; justify-content: space-between;
-    background: var(--card); border: 1px solid var(--card-border);
-    border-radius: var(--radius); padding: 16px 20px; margin-bottom: 24px;
-    gap: 16px; flex-wrap: wrap; box-shadow: var(--shadow);
-  }
-  .hud-player { display: flex; align-items: center; gap: 12px; }
-  .hud-avatar {
-    width: 40px; height: 40px; border-radius: 50%; background: var(--primary); color: #fff;
-    display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1.1rem;
-  }
-  .player-info { display: flex; flex-direction: column; }
-  .player-name { font-weight: 600; font-size: 0.95rem; }
-  .player-course { font-size: 0.75rem; color: var(--text-muted); }
-
-  .progress-area { flex: 1; min-width: 120px; }
-  .prog-label { font-size: 0.75rem; font-weight: 600; color: var(--text-muted); margin-bottom: 6px; display: flex; justify-content: space-between; }
-  .prog-bar-bg { height: 8px; background: var(--bg); border-radius: 4px; overflow: hidden; border: 1px solid var(--card-border); }
-  .prog-bar-fill { height: 100%; background: var(--primary); transition: width 0.3s ease; }
-
-  .timer-box {
-    display: flex; align-items: center; gap: 8px; background: var(--bg);
-    border: 1px solid var(--card-border); border-radius: 8px; padding: 8px 12px; font-weight: 600;
-  }
-  .timer-box.warn { color: var(--danger); border-color: var(--danger); background: var(--danger-bg); }
-
-  .q-counter, .score-hud { font-size: 0.85rem; font-weight: 500; color: var(--text-muted); }
-  .score-hud .sc { color: var(--success); font-weight: 700; }
-  .score-hud .sw { color: var(--danger); font-weight: 700; }
-
-  .q-card {
-    background: var(--card); border: 1px solid var(--card-border);
-    border-radius: var(--radius); padding: 32px 40px; box-shadow: var(--shadow);
-    animation: fadeIn 0.3s ease;
-  }
-  
-  .q-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-  .q-topic { font-size: 0.8rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 14px;}
-  .q-num-badge { display: inline-block; background: var(--bg); border: 1px solid var(--card-border); padding: 4px 10px; border-radius: 12px; font-size: 0.8rem; font-weight: 600; color: var(--text-muted); margin-bottom: 16px; }
-
-  .q-text { font-size: 1.2rem; font-weight: 600; line-height: 1.5; margin-bottom: 24px; }
-
-  .options { display: grid; gap: 12px; }
-  .opt-btn {
-    display: flex; align-items: center; gap: 16px; width: 100%; text-align: left;
-    background: var(--bg); border: 1px solid var(--card-border);
-    border-radius: 8px; padding: 14px 16px; cursor: pointer; color: var(--text);
-    font-family: inherit; font-size: 1rem; transition: all 0.2s;
-  }
-  .opt-btn:hover:not(:disabled) { border-color: var(--primary); background: var(--card); box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
-  .opt-letter {
-    width: 28px; height: 28px; border-radius: 6px; background: var(--card-border); color: var(--text-muted);
-    display: flex; align-items: center; justify-content: center; font-size: 0.85rem; font-weight: 700; flex-shrink: 0; transition: 0.2s;
-  }
-  .opt-btn:hover:not(:disabled) .opt-letter { background: var(--primary); color: #fff; }
-
-  .opt-btn.correct-ans { border-color: var(--success) !important; background: var(--success-bg) !important; }
-  .opt-btn.correct-ans .opt-letter { background: var(--success) !important; color: #fff !important; }
-  .opt-btn.wrong-ans { border-color: var(--danger) !important; background: var(--danger-bg) !important; }
-  .opt-btn.wrong-ans .opt-letter { background: var(--danger) !important; color: #fff !important; }
-  .opt-btn:disabled { cursor: default; }
-
-  .feedback-label {
-    display: inline-flex; align-items: center; gap: 6px; font-size: 0.85rem; font-weight: 600;
-    padding: 8px 14px; border-radius: 8px; margin-top: 20px; animation: fadeIn 0.2s ease;
-  }
-  .feedback-label.correct { background: var(--success-bg); color: var(--success); }
-  .feedback-label.wrong { background: var(--danger-bg); color: var(--danger); }
-
-  .card-footer { display: flex; align-items: center; justify-content: space-between; margin-top: 32px; border-top: 1px solid var(--card-border); padding-top: 24px; gap: 12px; flex-wrap: wrap;}
-  .skip-note { font-size: 0.85rem; color: var(--text-muted); }
-
-  #screen-result { display: none; width: 100%; max-width: 820px; animation: fadeIn 0.5s ease; margin: 0 auto;}
-  .result-header { text-align: center; margin-bottom: 32px; }
-  .trophy { font-size: 4rem; display: block; margin-bottom: 16px; }
-  .result-title { font-size: 2.5rem; font-weight: 800; color: var(--text); margin-bottom: 8px; }
-  .result-name { font-size: 1.1rem; color: var(--text-muted); }
-
-  .score-ring-wrap{display:flex;justify-content:center;margin:32px 0}
-  .score-ring{position:relative;width:180px;height:180px}
-  .score-ring svg{transform:rotate(-90deg)}
-  .ring-bg{fill:none;stroke:var(--bg);stroke-width:14}
-  .ring-fill{fill:none;stroke:var(--primary); stroke-width:14;stroke-linecap:round;transition:stroke-dashoffset 1.5s cubic-bezier(.4,0,.2,1)}
-  .score-inner{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
-  .score-pct{font-size:2.2rem;font-weight:800; color:var(--text);}
-  .score-lbl{font-size:0.75rem;color:var(--text-muted);font-weight:600;text-transform:uppercase; letter-spacing: 0.05em;}
-
-  .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 16px; margin-bottom: 32px; }
-  .stat-card { background: var(--card); border: 1px solid var(--card-border); border-radius: var(--radius); padding: 24px 20px; text-align: center; box-shadow: var(--shadow); }
-  .stat-val { font-size: 2.5rem; font-weight: 800; margin-bottom: 4px; color: var(--text); }
-  .stat-card.correct .stat-val { color: var(--success); }
-  .stat-card.incorrect .stat-val { color: var(--danger); }
-  .stat-card.skipped .stat-val { color: var(--warning); }
-  .stat-desc { font-size: 0.85rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; }
-
-  .result-actions { display: flex; gap: 16px; justify-content: center; margin-bottom: 40px; flex-wrap: wrap;}
-
-  .review-section { display: none; background: var(--card); border: 1px solid var(--card-border); border-radius: var(--radius); padding: 32px; box-shadow: var(--shadow); }
-  .review-title { font-size: 1.2rem; font-weight: 700; margin-bottom: 24px; color: var(--text); border-bottom: 1px solid var(--card-border); padding-bottom: 12px; }
-  .review-item { margin-bottom: 24px; padding-bottom: 24px; border-bottom: 1px solid var(--bg); border-left: 4px solid; padding-left: 20px; border-radius: 4px;}
-  .review-item.correct { border-left-color: var(--success); }
-  .review-item.incorrect { border-left-color: var(--danger); }
-  .review-item.skipped { border-left-color: var(--warning); }
-  .review-item:last-child { margin-bottom: 0; padding-bottom: 0; border-bottom: none; }
-  .review-q { font-size: 1rem; font-weight: 600; margin-bottom: 12px; }
-  .review-q .ri-num { color: var(--text-muted); font-size: 0.85rem; display: block; margin-bottom: 6px; font-weight: 500; }
-  .review-answers { display: flex; flex-direction: column; gap: 8px; }
-  .ra { display: flex; align-items: flex-start; gap: 10px; font-size: 0.95rem; padding: 10px 14px; border-radius: 8px; background: var(--bg); }
-  .ra.correct-ans-r { background: var(--success-bg); color: var(--success); font-weight: 600; }
-  .ra.your-wrong { background: var(--danger-bg); color: var(--danger); font-weight: 600; }
-  .ra.your-correct { background: var(--success-bg); color: var(--success); font-weight: 600; }
-  .ra.neutral { background: var(--bg); color: var(--text-muted); }
-  .ra-icon { margin-top: 2px; }
-
-  @media(max-width: 600px) {
-    .app { padding: 20px 16px; }
-    .q-card { padding: 24px; }
-    .clean-box { padding: 24px; }
-    .hud { flex-direction: column; align-items: stretch; }
-    .progress-area { margin-top: 12px; }
-  }
-</style>
-</head>
-<body>
-  <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" title="Toggle Dark/Light Mode">🌙</button>
-
-<div class="app">
-  <div id="screen-landing">
-    <div class="logo-badge"><span>🤝</span> NMAM Institute of Technology</div>
-    <h1 class="main-title">Universal Human<br>Values</h1>
-    <p class="subtitle">UHV MCQ Bank · Self-Exploration Challenge</p>
-    <div class="clean-box">
-      <label class="field-label" for="nameInput">📋 Enter Your Name to Begin</label>
-      <input class="name-input" id="nameInput" type="text" placeholder="Your full name…" autocomplete="off" maxlength="40"/>
-      <label class="field-label" for="chapterSelect">📚 Select Unit</label>
-      <select class="select-input" id="chapterSelect">
-        <option value="Unit I">Unit I (91 Questions)</option>
-        <option value="Unit II">Unit II (55 Questions)</option>
-        <option value="Unit III">Unit III (0 Questions - Updating Tomorrow)</option>
-      </select>
-      <button class="btn-start" id="btnStart" onclick="startQuiz()">
-        <span>🚀 &nbsp;Launch Quiz</span>
-      </button>
-    </div>
-    <div class="quiz-meta">
-      <div class="meta-chip"><i>📝</i> Multiple Units</div>
-      <div class="meta-chip"><i>⏱️</i> 60 Minutes</div>
-      <div class="meta-chip"><i>🔀</i> Shuffled Every Time</div>
-      <div class="meta-chip"><i>⚡</i> Instant Feedback</div>
-    </div>
-  </div>
-
-  <div id="screen-quiz">
-    <div class="hud">
-      <div class="hud-player">
-        <div class="hud-avatar" id="avatarInitial">-</div>
-        <div>
-          <div style="font-weight:700;font-size:.9rem" id="hudName">Player</div>
-          <div style="font-size:.72rem;color:var(--text-muted)" id="hudUnit">UHV · Unit I</div>
-        </div>
-      </div>
-      <div class="progress-area">
-        <div class="prog-label">Progress — <span id="progText">0/0</span></div>
-        <div class="prog-bar-bg"><div class="prog-bar-fill" id="progFill" style="width:0%"></div></div>
-      </div>
-      <div class="q-counter">Q <strong id="curQNum">1</strong> / <strong id="totalQNum">0</strong></div>
-      <div class="timer-box" id="timerBox">
-        <span class="timer-icon">⏱️</span>
-        <span class="timer-val" id="timerVal">60:00</span>
-      </div>
-    </div>
-
-    <div class="q-card" id="qCard">
-      <div class="q-topic" id="qTopic">Topic</div>
-      <div class="q-num-badge" id="qNumBadge">Q1</div>
-      <div class="q-text" id="qText">Loading…</div>
-      <div class="options" id="optionsWrap"></div>
-      <div id="feedbackLabel"></div>
-      <div class="card-footer">
-        <button class="btn-nav btn-prev" id="btnPrev" onclick="navigate(-1)">← Prev</button>
-        <span class="skip-note" id="skipNote"></span>
-        <button class="btn-nav btn-next" id="btnNext" onclick="navigate(1)">Next →</button>
-        <button class="btn-nav btn-submit" id="btnSubmit" style="display:none" onclick="submitQuiz()">🏁 Submit Quiz</button>
-      </div>
-    </div>
-  </div>
-
-  <div id="screen-result">
-    <div class="result-header">
-      <span class="trophy" id="trophyEmoji">🏆</span>
-      <div class="result-title" id="resultTitle">Quiz Complete!</div>
-      <div class="result-name" id="resultName"></div>
-    </div>
-
-    <div class="score-ring-wrap">
-      <div class="score-ring">
-        <svg viewBox="0 0 180 180" width="180" height="180">
-          <circle class="ring-bg" cx="90" cy="90" r="76"/>
-          <circle class="ring-fill" id="ringFill" cx="90" cy="90" r="76"
-            stroke-dasharray="477.5" stroke-dashoffset="477.5"/>
-        </svg>
-        <div class="score-inner">
-          <div class="score-pct" id="scorePct">0%</div>
-          <div class="score-lbl">Score</div>
-        </div>
-      </div>
-    </div>
-
-    <div class="stat-grid">
-      <div class="stat-card correct"><div class="stat-val" id="statCorrect">0</div><div class="stat-desc">✅ Correct</div></div>
-      <div class="stat-card incorrect"><div class="stat-val" id="statIncorrect">0</div><div class="stat-desc">❌ Incorrect</div></div>
-      <div class="stat-card skipped"><div class="stat-val" id="statSkipped">0</div><div class="stat-desc">⏭️ Skipped</div></div>
-      <div class="stat-card">
-        <div class="stat-val" id="statTimeTaken">--:--</div>
-        <div class="stat-desc">⏱️ Time Used</div>
-      </div>
-    </div>
-
-    <div class="result-actions">
-      <button class="btn-action btn-review" onclick="toggleReview()">📖 Review Answers</button>
-      <button class="btn-action btn-retake" onclick="retakeQuiz()">🔁 Retake Quiz</button>
-    </div>
-
-    <div class="review-section" id="reviewSection">
-      <div class="review-title">📖 Answer Review</div>
-      <div id="reviewList"></div>
-    </div>
-  </div>
-</div>
-
-<script>
-// ══════════ DATA ══════════
 const UHV_DATA = [
   {
     "name": "Unit I",
@@ -1999,7 +1630,6 @@ const UHV_DATA = [
   }
 ];
 
-// ══════════ STATE ══════════
 let playerName = '';
 let questions = [];
 let answers = {};
@@ -2010,7 +1640,6 @@ let startTime = null;
 let quizSubmitted = false;
 let reviewVisible = false;
 
-// ══════════ LOGIC ══════════
 function shuffle(arr){
   const a=[...arr];
   for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}
@@ -2023,10 +1652,15 @@ function startQuiz(){
     document.getElementById('nameInput').style.borderColor='var(--danger)';
     return;
   }
-  playerName=n;
   const unitName = document.getElementById("chapterSelect").value;
   const unit = UHV_DATA.find(u => u.name === unitName);
   
+  if(!unit.questions || unit.questions.length === 0){
+    alert("This unit is currently being updated and will be available tomorrow! Please try Unit I or II.");
+    return;
+  }
+
+  playerName=n;
   questions = shuffle(unit.questions).map(q=>({...q,opts:shuffle(q.opts)}));
   document.getElementById("totalQNum").textContent = questions.length;
   document.getElementById("hudUnit").textContent = `UHV · ${unitName}`;
@@ -2055,6 +1689,7 @@ function startTimer(){
 
 function updateTimerUI(){
   const m=Math.floor(secondsLeft/60),s=secondsLeft%60;
+  document.getElementById('timerVal').textContent=`${String(m).padStart(2,'0')}:${String(ts=s).padStart(2,'0')}`.replace('ts=s', ''); // Fix for previous string
   document.getElementById('timerVal').textContent=`${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
   const tb=document.getElementById('timerBox');
   if(secondsLeft<=120)tb.classList.add('warn');else tb.classList.remove('warn');
@@ -2094,9 +1729,9 @@ function renderQuestion(){
 
   if(alreadyAnswered) showFeedbackLabel(answers[currentIdx]===q.a);
 
-  document.getElementById('btnPrev').style.display=currentIdx===0-'none':'';
+  document.getElementById('btnPrev').style.display=currentIdx===0?'none':'';
   const isLast=currentIdx===questions.length-1;
-  document.getElementById('btnNext').style.display=isLast-'none':'';
+  document.getElementById('btnNext').style.display=isLast?'none':'';
   document.getElementById('btnSubmit').style.display=isLast?'':'none';
 }
 
@@ -2113,12 +1748,13 @@ function selectOption(opt, clickedBtn, q){
   });
 
   showFeedbackLabel(isCorrect);
-  renderQuestion(); // Re-render to update progress
+  renderQuestion();
 }
 
 function showFeedbackLabel(isCorrect){
   const el=document.getElementById('feedbackLabel');
-  el.innerHTML=isCorrect ? `<div class="feedback-label correct">✅ Correct!</div>`
+  el.innerHTML=isCorrect 
+    ? `<div class="feedback-label correct">✅ Correct!</div>`
     : `<div class="feedback-label wrong">❌ Wrong Answer</div>`;
 }
 
