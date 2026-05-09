@@ -282,7 +282,7 @@
       <select class="select-input" id="chapterSelect">
         <option value="Unit I">Unit I (91 Questions)</option>
         <option value="Unit II">Unit II (55 Questions)</option>
-        <option value="Unit III">Unit III (27 Questions - Updating Tomorrow)</option>
+        <option value="Unit III">Unit III (0 Questions - Updating Tomorrow)</option>
       </select>
       <button class="btn-start" id="btnStart" onclick="startQuiz()">
         <span>🚀 &nbsp;Launch Quiz</span>
@@ -2097,7 +2097,7 @@ function renderQuestion(){
   document.getElementById('btnPrev').style.display=currentIdx===0-'none':'';
   const isLast=currentIdx===questions.length-1;
   document.getElementById('btnNext').style.display=isLast-'none':'';
-  document.getElementById('btnSubmit').style.display=isLast-'':'none';
+  document.getElementById('btnSubmit').style.display=isLast?'':'none';
 }
 
 function selectOption(opt, clickedBtn, q){
@@ -2118,8 +2118,7 @@ function selectOption(opt, clickedBtn, q){
 
 function showFeedbackLabel(isCorrect){
   const el=document.getElementById('feedbackLabel');
-  el.innerHTML=isCorrect
-    - `<div class="feedback-label correct">✅ Correct!</div>`
+  el.innerHTML=isCorrect ? `<div class="feedback-label correct">✅ Correct!</div>`
     : `<div class="feedback-label wrong">❌ Wrong Answer</div>`;
 }
 
@@ -2172,7 +2171,7 @@ function buildReview(){
   questions.forEach((q,i)=>{
     const user=answers[i];
     const isCorrect=user===q.a;
-    const cls=user===undefined-'skipped':isCorrect-'correct':'incorrect';
+    const cls=user===undefined?'skipped':isCorrect?'correct':'incorrect';
     const item=document.createElement('div');
     item.className=`review-item ${cls}`;
     let optHtml='';
@@ -2189,7 +2188,7 @@ function buildReview(){
 
 function toggleReview(){
   reviewVisible=!reviewVisible;
-  document.getElementById('reviewSection').style.display=reviewVisible-'block':'none';
+  document.getElementById('reviewSection').style.display=reviewVisible?'block':'none';
 }
 
 function retakeQuiz(){
@@ -2198,15 +2197,15 @@ function retakeQuiz(){
 
 function toggleTheme() {
   const currentTheme = document.documentElement.getAttribute("data-theme");
-  const newTheme = currentTheme === "dark" - "light" : "dark";
+  const newTheme = currentTheme === "dark" ? "light" : "dark";
   document.documentElement.setAttribute("data-theme", newTheme);
-  document.getElementById("themeToggle").textContent = newTheme === "dark" - "☀️" : "🌙";
+  document.getElementById("themeToggle").textContent = newTheme === "dark" ? "☀️" : "🌙";
   localStorage.setItem("theme", newTheme);
 }
 
-const savedTheme = localStorage.getItem("theme") || (window.matchMedia("(prefers-color-scheme: dark)").matches - "dark" : "light");
+const savedTheme = localStorage.getItem("theme") || (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
 document.documentElement.setAttribute("data-theme", savedTheme);
-document.getElementById("themeToggle").textContent = savedTheme === "dark" - "☀️" : "🌙";
+document.getElementById("themeToggle").textContent = savedTheme === "dark" ? "☀️" : "🌙";
 </script>
 </body>
 </html>
